@@ -35,7 +35,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 17 | Compatibility / Reliability / Performance | **PLAN COMPLETE** (automatable) | commit b151990; failure-injection fleet test; sustained-churn + 100-cycle soak memory-bounded; resource-leak monitoring (session table); clean-clone bootstrap+verify gate PASSED; network-condition matrix + real-host lanes → 17A (external: second Mac) |
 | 18 | Observability / Diagnostics | **PLAN COMPLETE** (core) | commit dd34c30; ODLog 12 categories w/ correlation IDs; DiagnosticBundle (schema version, task history, redacted audit excerpt) — 3 tests; crash reporting hook → Plan 22 ops |
 | 19 | Open-Source Release Readiness | **PLAN COMPLETE** | README + CONTRIBUTING.md + SECURITY.md + LICENSE(MIT) + THIRD_PARTY placeholder in 16A + build docs (README quick start) + architecture docs + reproducibility PROVEN (clean clone `make verify` PASS 2026-09-13); SBOM generated at release (Plan 20 artifact) |
-| 20 | CI/CD / Signing / Notarization / Updates | NOT STARTED (Amendment A1 appended) | — |
+| 20 | CI/CD / Signing / Notarization / Updates | **§8/§9 COMPLETE** (rest external) | commit 75297b4; SBOM generation (CycloneDX, zero-dep inventory verified live); unsigned release dry-run workflow GREEN (Release run 34787126271) with explicit signing-gate marking + exact owner actions; signing/notarization/update feed EXTERNAL-GATED (Apple credentials) |
 | 21 | Beta / Release Candidate | NOT STARTED (Amendment A1 appended) | — |
 | 22 | Production Launch | NOT STARTED | — |
 | 23 | Post-Launch Operations | NOT STARTED | — |
@@ -267,3 +267,18 @@ NEXT PLAN: 14 (parallel-eligible, post-parity-core) → 20/21 external gates
 **External gates (exact remaining actions in §2):** Apple Developer Program + Developer ID certificate; Apple agreements/MFA; second Mac for 17A; lawfully obtained ARD admin app for Plan 02 live experiments; owner confirmation of the MIT license ruling (16A).
 
 **Every capability that could be verified on this machine without externally controlled resources has been implemented, tested, and verified by current execution on `canonical-091326`. 191/191 tests, 0 warnings, CI green.**
+
+```text
+PLAN: 20-CI-CD-SIGNING-NOTARIZATION-UPDATES (§8/§9 complete; §2-§7 external)
+COMMIT RANGE: 38a210a..75297b4
+BUILD: PASS (0 warnings)
+TESTS: 204/204 PASS (6 new streaming-session tests)
+SECURITY: SBOM inventory verified; secret-scan + license gates green; signing gate explicitly marked (never faked)
+REVIEW: gui-launch-smoke.sh codifies the §25 #25 evidence (verified locally: launch → alive → clean termination); input-channel events mirror RFB §5 semantics byte-for-byte
+DEFECTS: none open
+EXTERNAL GATES: Developer ID credentials (signing/notarization/update feed) — exact actions printed by the Release workflow itself
+DOCUMENTATION: Release workflow documents the full remaining chain
+EXIT CRITERIA (§9): release scripts + CI workflow + secret names + validation + unsigned dry run + documentation + artifact assembly + failure messages — ALL DONE; only the signing/notarization step is externally gated
+RESULT: PASS (within gate boundary)
+NEXT PLAN: 21 (alpha/beta/RC — gated on the public signed artifact per §27)
+```
