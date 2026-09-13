@@ -23,7 +23,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 05 | Credentials / Security Foundation | **PLAN COMPLETE** | commit 086a024; 124/124 tests; CI green run 34782529095; credential service (5 kinds incl. certificates, Keychain+reference rows, rotation/removal), RBAC 13 privileges w/ audit, host-key TOFU policy (migration 002), redaction filter |
 | 06 | RFB Remote Control | **PLAN COMPLETE** (hardening) | commit d85bfca; 138/138 tests; CI green run 34783171992; §25 gaps 1/2/8/11 closed (003.889, NIST DES KAT ×2 verified vs OpenSSL, partial-reads suite, CutText bytes); malformed-banner layout enforced; oversized-FB defense; RFBRetryPolicy; 100-cycle soak memory-bounded; real-Apple-host interop remains gated (17A) |
 | 07 | Commands / Files / Packages / Power | **PLAN COMPLETE** (transport contract) | commit adb995e; 144/144 tests; CI green (run 34783410910); SHA-256 verification + conflict policy + rsync mapping + package pipeline command sequence + tunnel policy/diagnostics; live-network paths (real push/pull/install) remain gated on 17A lab |
-| 08 | Task Engine / Scheduler | NOT STARTED (Amendment A1 appended) | — |
+| 08 | Task Engine / Scheduler | **PLAN COMPLETE** (durable core) | commit 2d59e4e; 151/151 tests; CI green run 34783913753; DurableTaskRunner: offline waits + reconnect executes + restart survival + per-target independence + idempotency + persisted cancellation; schedules in canonical DB w/ legacy JSON import |
 | 09 | Inventory / Reporting | NOT STARTED (Amendment A1 appended) | — |
 | 10 | Multi-Observe / Session Management | NOT STARTED (Amendment A1 appended) | — |
 | 11 | OpenDesk Endpoint Agent | NOT STARTED (Amendment A1 appended) | — |
@@ -218,4 +218,19 @@ DOCUMENTATION: Plan 07 A1.1/A1.2 satisfied at contract level; full drag/drop GUI
 EXIT CRITERIA: remote execution + file/package contract + tunnel policy — contract MET with tests; physical verification gated
 RESULT: PASS
 NEXT PLAN: 08
+```
+
+```text
+PLAN: 08-TASK-ENGINE-SCHEDULER
+COMMIT RANGE: c078c4d..2d59e4e
+BUILD: PASS (0 warnings)
+TESTS: 151/151 PASS (7 new durable-behavior tests)
+SECURITY: idempotency UNIQUE enforcement at SQL level; audit trail via task_events; cancellation persists
+REVIEW: RemoteTransport seam + FakeTransport; DurableTaskRunner implements Addendum §14 behaviors exactly; schedules migrated to canonical DB with legacy JSON import path (one release cycle)
+DEFECTS: none open
+EXTERNAL GATES: none for this plan
+DOCUMENTATION: Plan 08 A1.1/A1.2 satisfied
+EXIT CRITERIA: Addendum §14 durable behaviors all verified by tests — MET
+RESULT: PASS
+NEXT PLAN: 09
 ```
