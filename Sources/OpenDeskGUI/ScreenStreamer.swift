@@ -7,8 +7,7 @@ import SwiftUI
 /// Owns a background thread running the RFB update loop and publishes
 /// decoded frames to SwiftUI on the main actor.
 @MainActor
-final class ScreenStreamer: ObservableObject {
-    @Published var frame: NSImage?
+final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
     @Published var status: String = "Idle."
     @Published var isConnected = false
     @Published var controlMode = false
@@ -109,8 +108,13 @@ final class ScreenStreamer: ObservableObject {
                 if let fb {
                     for rect in rects { fb.apply(rect) }
                     let image = try FramebufferRenderer.nsImage(from: fb)
+                    // Single-producer (update thread) → single-consumer (main
+                    // thread) frame handoff. NSImage is not Sendable on every
+                    // SDK, so the handoff crosses the queue through an
+                    // explicitly unchecked box instead of a raw capture.
+                    let handoff = FrameHandoff(image)
                     DispatchQueue.main.async { [weak self] in
-                        self?.frame = image
+                        self?.frame = handoff.image
                     }
                 }
                 if firstUpdate {
@@ -164,4 +168,14 @@ final class ScreenStreamer: ObservableObject {
             }
         }
     }
+}
+
+/// Explicit handoff box for frame images crossing the update-thread → main-
+/// thread queue boundary. NSImage is not marked Sendable on all SDKs; the
+/// handoff is single-producer/single-consumer and the ownership transfer is
+/// total (the update thread never touches the image after publication), so
+/// the unchecked Sendable conformance is sound.
+final class FrameHandoff: @unchecked Sendable {
+    let image: NSImage?
+    init(_ image: NSImage?) { self.image = image }
 }
