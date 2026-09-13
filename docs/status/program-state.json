@@ -3,7 +3,7 @@
   "release": null,
   "canonicalBranch": "canonical-091326",
   "prePlansExecuted": ["00A-REPOSITORY-LINEAGE-RECONCILIATION", "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"],
-  "currentPlan": "02-CLEAN-ROOM-DECOMPOSITION",
+  "currentPlan": "03-ARCHITECTURE-FOUNDATION",
   "status": "executing",
   "completedPlans": ["01-REPOSITORY-BASELINE"],
   "externalGates": [

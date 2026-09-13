@@ -17,7 +17,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 00B | Claims-to-Evidence Audit | **EXECUTED** | `docs/status/CAPABILITY_AUDIT.md` + `docs/status/capability-audit.json`; `swift build && swift test` = 92/92 PASS, exit 0, 2026-09-13 |
 | 00 | Master Orchestrator | PERMANENT (controller) | — |
 | 01 | Repository Baseline | **PLAN COMPLETE** | Census docs/status/REPO_CENSUS.md; make verify PASS (build + lint 0 warnings + 92/92 tests + secret-scan + license-check) 2026-09-13; ADR-0004 enforced (.v14), ADR-0006 MIT; **CI green on canonical-091326** (run 34780948563) |
-| 02 | Clean-Room Decomposition | NOT STARTED (Amendment A1 appended) | — |
+| 02 | Clean-Room Decomposition | EXECUTED-LAWFUL-BOUNDARY (Amendment A1) | bundle observations ARD-BUNDLE-001..003 committed; 18-experiment corpus + ARD_FEATURE_PARITY.md; live experiments GATED on ARD admin install |
 | 03 | Architecture Foundation | NOT STARTED | — |
 | 04 | Device Discovery / Registry | NOT STARTED (Amendment A1 appended) | — |
 | 05 | Credentials / Security Foundation | NOT STARTED (Amendment A1 appended) | — |
@@ -52,6 +52,7 @@ Note: implementation history on `initial-091396` (MVP → `v0.3.0`) predates thi
 | Apple agreements acceptance + MFA | OPEN (expected) | Interactive acceptance by authorized person | 20 |
 | macOS Screen Recording / Accessibility consent (local dev) | OPEN (expected) | User consent dialogs on each admin Mac | 06, 15 |
 | Second Mac (real-host compatibility lab) | OPEN | Provide/authorize a supported target Mac for Plan 17A matrix | 17A, 21 |
+| ARD admin app (lawful copy of Remote Desktop.app) | OPEN | Operator installs a lawfully obtained ARD admin app; then run `scripts/analyze-ard-bundle.sh` + live experiments ARD-EXP-001..018 | 02, 08 |
 | Owner confirmation: MIT license ruling + scaffold-source relicensing | OPEN | Record decision in `16A`; until then scaffold code stays excluded | 16A, 19, 20 |
 | MDM enrollment authority (if used) | OPEN (expected) | Provide MDM tenant + authority | 13 |
 
@@ -127,4 +128,19 @@ DOCUMENTATION: REPO_CENSUS.md, ADR-0006, Makefile, scripts/secret-scan.sh, scrip
 EXIT CRITERIA: clean-clone bootstrap + verify path — MET locally
 RESULT: PASS
 NEXT PLAN: 02
+```
+
+```text
+PLAN: 02-CLEAN-ROOM-DECOMPOSITION (executed to lawful boundary)
+COMMIT RANGE: e4a607d (Plan 02 execution commit)
+BUILD: PASS (no code changes; make verify baseline holds)
+TESTS: 92/92 PASS (unchanged)
+SECURITY: clean-room policy enforced — structural outputs only, strings dumps excluded from commit; no proprietary assets in repo
+REVIEW: harness executed against 3 lawfully-shipped client bundles (ARDAgent 3.9.8, ScreensharingAgent, AppleVNCServer); 9 curated observation rows (B1–B9); experiment corpus expanded 15→18; ARD_FEATURE_PARITY.md created with parity accounting
+DEFECTS: none
+EXTERNAL GATES: ARD admin app not installed → live experiments ARD-EXP-001..018 gated (exact remaining action recorded in §2)
+DOCUMENTATION: CLIENT-BUNDLE-FACTS.md, ARD_BEHAVIOR_MATRIX.md (18 rows), PROTOCOL_OBSERVATIONS.md §3, ARD_FEATURE_PARITY.md
+EXIT CRITERIA: lawful static analysis executed + all A1 outputs exist; live experiments gated explicitly
+RESULT: PASS (within gate boundary)
+NEXT PLAN: 03
 ```
