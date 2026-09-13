@@ -96,7 +96,6 @@ public struct PackageInstallPipeline: Sendable {
     }
 
     public func remoteCommandSequence(remoteChecksum: String) -> [String] {
-        let sudo = useSudo ? "sudo " : ""
         let installerBin = useSudo ? "sudo installer" : "installer"
         return [
             // 1. Verify the staged artifact matches the local checksum.
