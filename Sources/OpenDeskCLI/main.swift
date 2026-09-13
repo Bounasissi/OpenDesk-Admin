@@ -295,7 +295,6 @@ struct OpenDeskCLI {
             print("Scheduler running — checks every 5s. Ctrl-C to stop.")
             scheduler.start()
             dispatchMain()
-            return 0
         case "run-now":
             guard let name = args.dropFirst().first else {
                 fputs("schedule run-now: missing <name>\n", stderr)

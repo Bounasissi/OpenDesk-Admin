@@ -18,7 +18,7 @@ final class TunnelManagerTests: XCTestCase {
 
     func testTunnelCommandShape() {
         // The command must include the local-forward spec and no remote command.
-        let host = Host(hostname: "mac1.local", port: 2222, username: "admin")
+        _ = Host(hostname: "mac1.local", port: 2222, username: "admin")
         let expectedArgs = [
             "-N", "-T", "-p", "2222",
             "-o", "BatchMode=yes",

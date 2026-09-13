@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "OpenDeskAdmin",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     products: [
         .library(name: "OpenDeskCore", targets: ["OpenDeskCore"]),
         .executable(name: "opendesk", targets: ["OpenDeskCLI"]),

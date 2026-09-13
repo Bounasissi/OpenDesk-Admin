@@ -9,3 +9,4 @@ xcuserdata/
 .tables
 .tables-shm
 .tables-wal
+.build-lint/

@@ -1,7 +1,7 @@
 import Foundation
 import AppKit
 import SwiftUI
-import OpenDeskCore
+@preconcurrency import OpenDeskCore
 
 /// Live screen streaming session for the GUI viewer.
 /// Owns a background thread running the RFB update loop and publishes
@@ -14,14 +14,14 @@ final class ScreenStreamer: ObservableObject {
     @Published var controlMode = false
 
     private var thread: Thread?
-    private var stopFlag = false
+    // Lock-guarded shared state: written by the RFB update thread and read/
+    // written on the main thread. stateLock is the synchronization point.
+    private nonisolated(unsafe) var stopFlag = false
     private let stateLock = NSLock()
 
-    // Protocol objects accessed from both the update thread and the main
-    // thread (input events) — guarded by stateLock.
-    private var client: RFBClient?
-    private var connection: RFBConnection?
-    private var framebuffer: Framebuffer?
+    private nonisolated(unsafe) var client: RFBClient?
+    private nonisolated(unsafe) var connection: RFBConnection?
+    private nonisolated(unsafe) var framebuffer: Framebuffer?
 
     let host: OpenDeskCore.Host
     let password: String?
@@ -71,7 +71,7 @@ final class ScreenStreamer: ObservableObject {
 
     // MARK: - Update loop (background thread)
 
-    private func runUpdateLoop(host: OpenDeskCore.Host, password: String?) {
+    private nonisolated func runUpdateLoop(host: OpenDeskCore.Host, password: String?) {
         do {
             let tcp = try TCPConnection(host: host.hostname, port: UInt16(host.screenPort))
             stateLock.lock()
@@ -94,9 +94,10 @@ final class ScreenStreamer: ObservableObject {
             // First update is a full request; subsequent are incremental.
             try rfb.requestFramebufferUpdate(incremental: false)
 
+            let displayHost = rfb.serverName.isEmpty ? host.hostname : rfb.serverName
             DispatchQueue.main.async { [weak self] in
                 self?.isConnected = true
-                self?.status = "Connected: \(rfb.serverName.isEmpty ? host.hostname : rfb.serverName) (\(dims.width)×\(dims.height))"
+                self?.status = "Connected: \(displayHost) (\(dims.width)×\(dims.height))"
             }
 
             var firstUpdate = true
@@ -128,7 +129,7 @@ final class ScreenStreamer: ObservableObject {
         }
     }
 
-    private func isStopped() -> Bool {
+    private nonisolated func isStopped() -> Bool {
         stateLock.lock()
         defer { stateLock.unlock() }
         return stopFlag

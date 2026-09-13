@@ -61,7 +61,7 @@ public final class TCPConnection: RFBConnection {
     }
 
     public func write(_ data: Data) throws {
-        var bytes = [UInt8](data)
+        let bytes = [UInt8](data)
         var sent = 0
         while sent < bytes.count {
             let n = bytes.withUnsafeBytes { raw in

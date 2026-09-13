@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, canonical-091326]
   pull_request:
 
 jobs:
@@ -12,5 +12,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: swift build --build-tests
+      - name: Lint (warnings as errors)
+        run: swift build --build-tests --scratch-path .build-lint -Xswiftc -warnings-as-errors
       - name: Test
         run: swift test
+      - name: Secret scan
+        run: ./scripts/secret-scan.sh
+      - name: License check
+        run: ./scripts/license-check.sh

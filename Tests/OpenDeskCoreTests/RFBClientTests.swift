@@ -72,7 +72,7 @@ final class RFBClientTests: XCTestCase {
 
         XCTAssertEqual(client.dimensions, FramebufferDimensions(width: 1920, height: 1080))
         XCTAssertEqual(client.serverName, "Test")
-        XCTAssertEqual(client.negotiatedSecurity, .none)
+        XCTAssertEqual(client.negotiatedSecurity, RFBSecurityType.none)
 
         // Verify client replied with version, chosen security type, and ClientInit share=1
         XCTAssertEqual(mock.received.count, 3)

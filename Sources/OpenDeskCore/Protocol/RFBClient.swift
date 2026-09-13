@@ -170,7 +170,7 @@ public final class RFBClient {
             let typesData = try connection.readExactly(Int(typeCount))
             let offered = [UInt8](typesData)
             if offered.contains(RFBSecurityType.none.rawValue) {
-                negotiatedSecurity = .none
+                negotiatedSecurity = RFBSecurityType.none
                 try connection.write(Data([RFBSecurityType.none.rawValue]))
             } else if offered.contains(RFBSecurityType.vncAuthentication.rawValue) {
                 negotiatedSecurity = .vncAuthentication
@@ -188,8 +188,8 @@ public final class RFBClient {
             let typeData = try connection.readExactly(4)
             let type = UInt32(typeData[0]) << 24 | UInt32(typeData[1]) << 16 | UInt32(typeData[2]) << 8 | UInt32(typeData[3])
             switch type {
-            case 0: negotiatedSecurity = .none
-            case 1: negotiatedSecurity = .none
+            case 0: negotiatedSecurity = RFBSecurityType.none
+            case 1: negotiatedSecurity = RFBSecurityType.none
             case 2:
                 negotiatedSecurity = .vncAuthentication
                 try performVNCAuth(password: password)

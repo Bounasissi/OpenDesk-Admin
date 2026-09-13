@@ -143,7 +143,7 @@ final class HextileBandwidthTests: XCTestCase {
         // --- Encode as hextile: 16 solid tiles + one coloured subrect each
         var hextile = Data()
         let tilesPerRow = width / 16
-        for tileIndex in 0..<(tilesPerRow * (height / 16)) {
+        for _ in 0..<(tilesPerRow * (height / 16)) {
             hextile.append(0x02 | 0x08)              // BackgroundSpecified + AnySubrects
             hextile.append(contentsOf: [UInt8(background.blue), UInt8(background.green), UInt8(background.red), 0])
             hextile.append(1)                        // one subrect ("window")

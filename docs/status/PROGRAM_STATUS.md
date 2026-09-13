@@ -16,7 +16,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 00A | Repository Lineage Reconciliation | **EXECUTED** | Three merges on `canonical-091326` (`d75f01c`, `5346673`, `e41a699`); `docs/status/REPOSITORY_LINEAGE.md`; 92/92 tests pass on canonical |
 | 00B | Claims-to-Evidence Audit | **EXECUTED** | `docs/status/CAPABILITY_AUDIT.md` + `docs/status/capability-audit.json`; `swift build && swift test` = 92/92 PASS, exit 0, 2026-09-13 |
 | 00 | Master Orchestrator | PERMANENT (controller) | — |
-| 01 | Repository Baseline | NOT STARTED | — |
+| 01 | Repository Baseline | **PLAN COMPLETE** (local gate) | Census docs/status/REPO_CENSUS.md; make verify PASS (build+lint 0 warnings+92/92 tests+secret-scan+license-check), 2026-09-13; ADR-0004 enforced (.v14), ADR-0006 MIT; CI extended — remote green pending push |
 | 02 | Clean-Room Decomposition | NOT STARTED (Amendment A1 appended) | — |
 | 03 | Architecture Foundation | NOT STARTED | — |
 | 04 | Device Discovery / Registry | NOT STARTED (Amendment A1 appended) | — |
@@ -113,3 +113,18 @@ NEXT PLAN: 01
 | LibVNCClient never linked on canonical (custom Swift RFB per 06A default ruling) | Plan 06A owner | RESOLVED-BY-DEFAULT-RULING (ADR if reversed) |
 | Shared-SQLite multi-admin experiment | Plan 04 A1.4 owner | OPEN — experiment only, ADR before Plan 05 |
 | Test-inventory gaps (9 items) | Owning plans (06, 08, 09, 04, 15) | OPEN — acceptance checklists in amendments |
+
+```text
+PLAN: 01-REPOSITORY-BASELINE
+COMMIT RANGE: (Plan 01 commit series on canonical-091326)
+BUILD: PASS (swift build --build-tests, 0 warnings)
+TESTS: 92/92 PASS, 0 failures, exit 0
+SECURITY: secret-scan gate PASS; license-check gate PASS (MIT single-story); ADR-0006 recorded
+REVIEW: census recorded (docs/status/REPO_CENSUS.md); ADR-0004 deployment floor enforced (.v13→.v14); Makefile canonical commands established; CI extended (lint/secret/license)
+DEFECTS: none
+EXTERNAL GATES: CI remote-run green requires branch push to origin (owner action or next session with credentials)
+DOCUMENTATION: REPO_CENSUS.md, ADR-0006, Makefile, scripts/secret-scan.sh, scripts/license-check.sh, ci.yml
+EXIT CRITERIA: clean-clone bootstrap + verify path — MET locally
+RESULT: PASS
+NEXT PLAN: 02
+```

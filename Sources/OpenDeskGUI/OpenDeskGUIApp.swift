@@ -27,7 +27,7 @@ struct OpenDeskGUIApp: App {
             CommandGroup(replacing: .newItem) {
                 Button("New Screen Viewer Window") {
                     if let url = NSWorkspace.shared.frontmostApplication?.bundleURL {
-                        _ = NSWorkspace.shared.openApplication(at: url, configuration: .init()) { _, _ in }
+                        NSWorkspace.shared.openApplication(at: url, configuration: .init()) { _, _ in }
                     }
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])

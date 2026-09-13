@@ -86,7 +86,7 @@ final class LoopbackRFBServer {
         let fd = clientFD
         lock.unlock()
         guard fd >= 0 else { throw ServerError.notConnected }
-        var bytes = [UInt8](data)
+        let bytes = [UInt8](data)
         var sent = 0
         while sent < bytes.count {
             let n = bytes.withUnsafeBytes { raw in
