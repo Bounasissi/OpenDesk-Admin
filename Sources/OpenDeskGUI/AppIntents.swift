@@ -23,7 +23,7 @@ struct RunTaskIntent: AppIntent {
                 deviceIDs: [],
                 parameters: #"{"savedTask":"\#(taskName)"}"#
             )
-            return .result(dialog: "Task '\(taskName)' queued (\(task.id.rawValue.prefix(8))…).")
+            return .result(dialog: "Task '\(taskName)' queued (\(String(task.id.rawValue.prefix(8)))…).")
         } catch {
             return .result(dialog: "Task submission failed: \(String(describing: error))")
         }
@@ -71,7 +71,7 @@ struct RestartMacsIntent: AppIntent {
         let runner = DurableTaskRunner(db: db, transport: NoopTransport())
         do {
             let task = try runner.submit(type: "power.restart", deviceIDs: [], parameters: #"{"group":"\#(groupName)"}"#)
-            return .result(dialog: "Restart task queued (\(task.id.rawValue.prefix(8))…).")
+            return .result(dialog: "Restart task queued (\(String(task.id.rawValue.prefix(8)))…).")
         } catch {
             return .result(dialog: "Restart task failed: \(String(describing: error))")
         }
@@ -90,7 +90,7 @@ struct CollectInventoryIntent: AppIntent {
         let runner = DurableTaskRunner(db: db, transport: NoopTransport())
         do {
             let task = try runner.submit(type: "inventory.collect", deviceIDs: [])
-            return .result(dialog: "Inventory collection queued (\(task.id.rawValue.prefix(8))…).")
+            return .result(dialog: "Inventory collection queued (\(String(task.id.rawValue.prefix(8)))…).")
         } catch {
             return .result(dialog: "Inventory collection failed: \(String(describing: error))")
         }
