@@ -187,34 +187,52 @@ struct LabeledRow: View {
 
 struct ScreenConnectView: View {
     let host: OpenDeskCore.Host
+    @State private var password = ""
     @State private var status: String = "Idle."
-    @State private var isConnecting = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Observe \(host.hostname) (VNC port \(host.screenPort))")
                 .font(.headline)
-            Button("Connect & Test Handshake") {
-                isConnecting = true
+            HStack {
+                SecureField("VNC password (optional)", text: $password)
+                    .frame(maxWidth: 240)
+                Button("Open Screen Viewer") {
+                    ScreenSessionCoordinator.shared.open(host: host, password: password.isEmpty ? nil : password)
+                    openScreenViewerWindow()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            Button("Test Handshake Only") {
+                status = "Testing…"
                 let target = host
                 Task.detached {
                     let result = await ScreenConnectHelper.handshakeResult(target)
-                    await MainActor.run {
-                        status = result
-                        isConnecting = false
-                    }
+                    await MainActor.run { status = result }
                 }
             }
-            .disabled(isConnecting)
             Text(status)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
-            Text("Full pixel streaming opens in the Screen Viewer window once auth is configured for the target host.")
+            Text("Observe streams the client's screen into the Screen Viewer window. Control mode adds keyboard/mouse injection once connected.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
         .padding()
     }
+
+    private func openScreenViewerWindow() {
+        // Ask the window manager to bring the "Screen Viewer" window forward;
+        // SwiftUI WindowGroup windows re-open when their scene is activated.
+        NotificationCenter.default.post(name: .openScreenViewer, object: nil)
+        if let window = NSApp.windows.first(where: { $0.title.contains("Screen Viewer") }) {
+            window.makeKeyAndOrderFront(nil)
+        }
+    }
+}
+
+extension Notification.Name {
+    static let openScreenViewer = Notification.Name("openScreenViewer")
 }
 
 enum ScreenConnectHelper {
