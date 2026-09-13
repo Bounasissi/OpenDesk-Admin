@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "product": "OpenDesk",
+    "canonicalBranch": "canonical-091326",
+    "auditedAt": "2026-09-13",
+    "toolchain": "Swift 6.3.3 / Xcode 26.6 / arm64",
+    "buildResult": "PASS",
+    "testResult": "92/92 passed, 0 failed, exit 0",
+    "sourceBranchReverification": {
+      "initial-091396": "92/92 PASS, exit 0",
+      "OG-Output-Plan-0913": "31/31 PASS (5 suites, Swift Testing), exit 0"
+    },
+    "historicalTestCountsAreNotReleaseEvidence": [22, 45, 54, 67, 80, 88, 92]
+  },
+  "statuses": {
+    "VERIFIED_CURRENT": [
+      "rfb.handshake.none",
+      "rfb.auth.vnc.des",
+      "rfb.auth.wrong_password_rejection",
+      "rfb.decode.raw",
+      "rfb.decode.hextile",
+      "rfb.pixel_format_scaling",
+      "rfb.keyevent_wire_format",
+      "rfb.pointerevent_wire_format",
+      "rfb.frame_rendering",
+      "rfb.keysym_mapping",
+      "transport.ssh_command",
+      "transport.ssh_tunnel",
+      "transport.wake_on_lan",
+      "discovery.manual_host_add",
+      "registry.persistence.json_sqlite",
+      "tasks.bounded_fleet_concurrency",
+      "tasks.saved_task_store_versioned",
+      "scheduler.math_interval_daily",
+      "scheduler.persistence_json_store",
+      "distribution.plist_defaults_import_byhost",
+      "inventory.csv_rfc4180_export",
+      "release.dev_app_bundle_adhoc_signing"
+    ],
+    "PRESENT_BUT_UNVERIFIED": [
+      "rfb.version_003_889_handling",
+      "rfb.des_standard_known_answer_vector",
+      "rfb.framebuffer_update_request_xy_assertion",
+      "rfb.copyrect_decoding",
+      "rfb.cuttext_byte_assertion",
+      "rfb.live_streaming_control_mode",
+      "gui.tiled_observation",
+      "discovery.bonjour_headless_test",
+      "distribution.scp_rsync_push_pull",
+      "distribution.package_install_pipeline",
+      "inventory.collectors_breadth",
+      "inventory.json_export",
+      "gui.launch_smoke",
+      "ci.remote_run_verification"
+    ],
+    "MISSING": [
+      "rfb.partial_socket_read_tests",
+      "rfb.network_framework_threading_assertions",
+      "rfb.connection_soak_100_cycle",
+      "discovery.cidr_scan_dedupe",
+      "discovery.identity_reconciliation",
+      "discovery.device_states_lifecycle",
+      "groups.smart_groups_predicates",
+      "tasks.durable_states",
+      "tasks.idempotency_keys",
+      "scheduler.rrule",
+      "scheduler.run_once_later",
+      "scheduler.on_reconnect_on_predicate",
+      "files.checksum_verified_transfers",
+      "inventory.historical_diff_comparison_aggregates",
+      "gui.discovery_concurrency",
+      "gui.onboarding_permission_detection",
+      "gui.accessibility_verification",
+      "security.keychain_store",
+      "security.rbac_13_privileges",
+      "security.audit_trail",
+      "agent.endpoint_agent",
+      "provisioning.mdm",
+      "release.developer_id_notarization",
+      "release.update_feed_sparkle",
+      "release.alpha_beta_rc_milestones",
+      "release.v1_public_launch",
+      "cli.json_output_everywhere",
+      "automation.local_api_unix_socket",
+      "automation.app_intents"
+    ],
+    "SUPERSEDED": [
+      "rfb.scaffold_ard30_client",
+      "discovery.scaffold_cidr_implementation",
+      "persistence.scaffold_21_table_schema",
+      "scheduler.scaffold_rrule_implementation",
+      "groups.scaffold_predicate_engine",
+      "tasks.scaffold_idempotency_implementation",
+      "transfers.scaffold_checksum_implementation",
+      "tests.scaffold_swift_testing_suite"
+    ],
+    "CONFLICTING": [
+      "license.mit_vs_gpl",
+      "architecture.libvncclient_vs_custom_swift_rfb",
+      "registry.shared_sqlite_multiadmin_vs_single_admin"
+    ],
+    "EXTERNAL_GATE": [
+      "rfb.apple_screen_sharing_interop_real_host",
+      "release.apple_developer_id_credentials",
+      "lab.second_mac_availability",
+      "license.owner_confirmation_relicensing"
+    ],
+    "POST_V1": [
+      "streaming.native_high_performance_full_surface",
+      "streaming.audio_hdr_4k",
+      "connectivity.tailscale_native",
+      "automation.rest_network_api",
+      "dashhound_integration"
+    ]
+  },
+  "requiredTestInventory": {
+    "satisfied": [3, 4, 5, 6, 7, 9, 10, 12, 13, 14, 15, 17, 20, 21, 22, 23, 24],
+    "gaps": [1, 2, 8, 11, 16, 18, 19, 25, 26],
+    "gapDetail": {
+      "1": "Add RFB 003.889 parse/negotiate test",
+      "2": "Add standard DES known-answer test",
+      "8": "Add fragmented/single-byte/multi-frame/EOF/short-read transport tests",
+      "11": "Assert CutText bytes in loopback test",
+      "16": "Add duplicate task rejection test",
+      "18": "Add dedicated JSON export test",
+      "19": "Add headless Bonjour browse unit test",
+      "25": "Add GUI launch smoke (XCTest)",
+      "26": "Add GUI discovery concurrency test"
+    }
+  },
+  "governance": {
+    "lineage": "docs/status/REPOSITORY_LINEAGE.md",
+    "plansAmended": ["02", "04", "05", "06", "07", "08", "09", "10", "11", "14", "20", "21"],
+    "plansAdded": ["00A", "00B", "06A", "16A", "17A"],
+    "governanceUpdated": ["AGENTS.md §11", "PROGRAM_CHARTER.md §9", "00-MASTER-ORCHESTRATOR.md §9", "docs/product/POST_V1_ROADMAP.md"]
+  }
+}
