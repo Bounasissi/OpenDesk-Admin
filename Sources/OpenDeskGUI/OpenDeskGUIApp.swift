@@ -15,19 +15,32 @@ struct OpenDeskGUIApp: App {
             DashboardView()
                 .frame(minWidth: 900, minHeight: 600)
         }
+        Window("Tiled Observation", id: "tiled-observation") {
+            TiledObservationView()
+                .frame(minWidth: 800, minHeight: 560)
+        }
         WindowGroup("Screen Viewer", id: "screen-viewer") {
             ScreenViewerHostView()
                 .frame(minWidth: 720, minHeight: 480)
         }
         .commands {
-            CommandGroup(after: .newItem) {
+            CommandGroup(replacing: .newItem) {
                 Button("New Screen Viewer Window") {
                     if let url = NSWorkspace.shared.frontmostApplication?.bundleURL {
                         _ = NSWorkspace.shared.openApplication(at: url, configuration: .init()) { _, _ in }
                     }
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
+                Divider()
+                Button("Show Tiled Observation") {
+                    NotificationCenter.default.post(name: .openTiledObservation, object: nil)
+                }
+                .keyboardShortcut("t", modifiers: [.command])
             }
         }
     }
+}
+
+extension Notification.Name {
+    static let openTiledObservation = Notification.Name("openTiledObservation")
 }

@@ -31,6 +31,7 @@ struct OpenDeskCLI {
         case "hosts": return handleHosts(rest)
         case "task": return handleTask(rest)
         case "tasks": return handleSavedTasks(rest)
+        case "schedule": return handleSchedule(rest)
         case "wake": return handleWake(rest)
         case "inventory": return handleInventory(rest)
         case "observe": return handleObserve(rest)
@@ -57,6 +58,11 @@ struct OpenDeskCLI {
             opendesk tasks add <name> --command "<cmd>" [--timeout 30] [--groups g1]
             opendesk tasks list
             opendesk tasks remove <name>
+            opendesk schedule add <name> --task <saved-task> [--groups g1] [--every <sec> | --daily HH:mm]
+            opendesk schedule list
+            opendesk schedule daemon                 (runs schedules in foreground)
+            opendesk schedule run-now <name>
+            opendesk schedule remove <name>
             opendesk wake --host <hostname>          (requires --mac registered on host)
             opendesk inventory --local [--export-csv <path>]
             opendesk inventory --host <hostname>
@@ -228,6 +234,100 @@ struct OpenDeskCLI {
             fputs("wake failed: \(error)\n", stderr)
             return 1
         }
+    }
+
+    // MARK: - schedule
+
+    static func handleSchedule(_ args: [String]) -> Int32 {
+        guard let sub = args.first else {
+            fputs("schedule: missing subcommand (add|list|daemon|run-now|remove)\n", stderr)
+            return 1
+        }
+        let store = ScheduleStore()
+        let taskStore = TaskStore()
+        switch sub {
+        case "add":
+            guard let name = args.dropFirst().first,
+                  let taskName = optionValue("--task", in: args) else {
+                fputs("schedule add: usage: opendesk schedule add <name> --task <saved-task> [--every <sec> | --daily HH:mm]\n", stderr)
+                return 1
+            }
+            let trigger: ScheduleDefinition.Trigger
+            if let every = optionValue("--every", in: args), let seconds = Int(every) {
+                trigger = .interval(seconds: seconds)
+            } else if let daily = optionValue("--daily", in: args),
+                      let parts = parseDaily(daily) {
+                trigger = parts
+            } else {
+                fputs("schedule add: specify --every <seconds> or --daily HH:mm\n", stderr)
+                return 1
+            }
+            let groups = (optionValue("--groups", in: args) ?? "").split(separator: ",").map(String.init)
+            guard taskStore.task(named: taskName) != nil else {
+                fputs("schedule add: no saved task named \(taskName)\n", stderr)
+                return 1
+            }
+            guard store.add(ScheduleDefinition(name: name, taskName: taskName, targetGroups: groups, trigger: trigger)) else {
+                fputs("schedule add: schedule named \(name) already exists\n", stderr)
+                return 1
+            }
+            print("Schedule \(name) saved (\(ScheduleMath.describe(trigger)))")
+            return 0
+        case "list":
+            let schedules = store.loadAll()
+            if schedules.isEmpty {
+                print("No schedules. Add one: opendesk schedule add <name> --task <task> --every <sec>")
+                return 0
+            }
+            for schedule in schedules {
+                print("\(schedule.name)  task=\(schedule.taskName)  \(ScheduleMath.describe(schedule.trigger))  groups=\(schedule.targetGroups.joined(separator: ","))  \(schedule.enabled ? "enabled" : "disabled")")
+            }
+            return 0
+        case "daemon":
+            let scheduler = TaskScheduler(scheduleStore: store, taskStore: taskStore, hostRegistry: HostRegistry())
+            scheduler.onRun = { scheduleName, results in
+                let okCount = results.filter(\.succeeded).count
+                print("[\(scheduleName)] ran on \(results.count) hosts, \(okCount) succeeded")
+            }
+            signal(SIGINT) { _ in exit(0) }
+            print("Scheduler running — checks every 5s. Ctrl-C to stop.")
+            scheduler.start()
+            dispatchMain()
+            return 0
+        case "run-now":
+            guard let name = args.dropFirst().first else {
+                fputs("schedule run-now: missing <name>\n", stderr)
+                return 1
+            }
+            let scheduler = TaskScheduler(scheduleStore: store, taskStore: taskStore, hostRegistry: HostRegistry())
+            guard let results = scheduler.runNow(named: name) else {
+                fputs("schedule run-now: no schedule named \(name)\n", stderr)
+                return 1
+            }
+            if results.isEmpty {
+                print("No hosts matched the schedule's target groups.")
+                return 0
+            }
+            printResults(results)
+            return results.allSatisfy { $0.succeeded } ? 0 : 2
+        case "remove":
+            guard let name = args.dropFirst().first else {
+                fputs("schedule remove: missing <name>\n", stderr)
+                return 1
+            }
+            print(store.remove(named: name) ? "Removed schedule \(name)" : "No schedule named \(name)")
+            return 0
+        default:
+            fputs("schedule: unknown subcommand \(sub)\n", stderr)
+            return 1
+        }
+    }
+
+    static func parseDaily(_ value: String) -> ScheduleDefinition.Trigger? {
+        let parts = value.split(separator: ":")
+        guard parts.count == 2, let hour = Int(parts[0]), let minute = Int(parts[1]),
+              (0...23).contains(hour), (0...59).contains(minute) else { return nil }
+        return .daily(hour: hour, minute: minute)
     }
 
     // MARK: - inventory

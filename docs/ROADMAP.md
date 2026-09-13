@@ -26,11 +26,11 @@
 - [x] Screen connect + handshake status view
 - [x] Single-screen live observation (ScreenStreamer → Screen Viewer window)
 - [x] Control mode input routing (NSEvent → KeysymMap → RFB KeyEvent/PointerEvent)
-- [ ] Tiled multi-screen observation (grid of several hosts)
+- [x] Tiled multi-screen observation (TiledObservationView, 1–4 column grid)
 
 ## Phase 4 — Advanced
-- [ ] Scheduled tasks (launchd integration)
-- [ ] Preference/plist payload distribution
+- [x] Scheduled tasks (in-process TaskScheduler; interval + daily triggers; `opendesk schedule daemon` for foreground runs; launchd plist wrapper documented as the boot-persistent path)
+- [x] Preference/plist payload distribution (`defaults import` over SSH)
 - [ ] Multi-admin shared registry (SQLite or Supabase backend behind a flag)
 - [ ] App Store-independent signed/notarized distribution
 

@@ -81,6 +81,45 @@ public struct DistributionEngine: Sendable {
         )
     }
 
+    /// Push a preference plist payload to a client and import it into the
+    /// given defaults domain via `defaults import` (ARD "Copy app settings").
+    /// - Parameters:
+    ///   - localPath: path to a binary or XML plist on the admin Mac
+    ///   - domain: defaults domain, e.g. "com.example.myapp" or "byhost:com.example.myapp"
+    /// - Note: `defaults import` merges keys into the domain. Users must be
+    ///   logged out or apps restarted for changes to take effect.
+    public func pushPlist(localPath: String, toHost host: Host, domain: String) throws -> TaskResult {
+        guard FileManager.default.fileExists(atPath: localPath) else {
+            throw DistributionError.localFileMissing(localPath)
+        }
+        let remoteStaging = "/tmp/opendesk-payload-\(UUID().uuidString).plist"
+
+        let transport = SSHTransport(host: host)
+        let start = Date()
+        let copyResult = try copyItem(localPath: localPath, toHost: host, remotePath: remoteStaging)
+        guard copyResult.succeeded else { return copyResult }
+
+        let defaultsDomain: String
+        let command: String
+        if domain.hasPrefix("byhost:") {
+            let actual = String(domain.dropFirst("byhost:".count))
+            defaultsDomain = actual
+            command = "defaults import \(actual) \(remoteStaging) && rm -f \(remoteStaging) && echo imported"
+        } else {
+            defaultsDomain = domain
+            command = "defaults import \(defaultsDomain) \(remoteStaging) && rm -f \(remoteStaging) && echo imported"
+        }
+        let output = try transport.run(command: command, timeoutSeconds: 60)
+        return TaskResult(
+            taskId: UUID(),
+            host: host.hostname,
+            exitCode: output.exitCode,
+            stdout: output.stdout,
+            stderr: output.stderr,
+            durationMs: Int(Date().timeIntervalSince(start) * 1000)
+        )
+    }
+
     private func runProcess(_ path: String, args: [String]) throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: path)

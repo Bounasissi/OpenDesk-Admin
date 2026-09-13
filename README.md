@@ -17,6 +17,9 @@ MVP in active development. See `docs/` for the full decomposition and architectu
 | Hardware/software inventory reports | `OpenDeskCore/Inventory` | Implemented + CSV/JSON export |
 | Client roster / computer groups | `OpenDeskCore/Transport` (HostRegistry) | Implemented (persistent, versioned) |
 | Saved tasks | `OpenDeskCore/Tasks` (TaskStore) | Implemented (versioned on update) |
+| Recurring/scheduled tasks | `OpenDeskCore/Tasks` (TaskScheduler) | Implemented (interval + daily triggers, foreground daemon) |
+| Copy app settings (plist payloads) | `OpenDeskCore/Distribution` | Implemented (`defaults import`, byhost supported) |
+| Tiled multi-screen observation | `OpenDeskGUI` (TiledObservationView) | Implemented (grid 1–4 columns) |
 | Wake-on-LAN | `OpenDeskCore/Tasks` (WakeOnLAN) | Implemented (RFC 102-byte magic packet) |
 | Bonjour client discovery | `OpenDeskCore/Transport` (FleetDiscovery) | Implemented (`_rfb._tcp` browse) |
 | GUI dashboard | `OpenDeskGUI` (SwiftUI) | Working: roster, add host, task runner, inventory, screen connect |
