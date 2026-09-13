@@ -128,7 +128,7 @@ public struct AuditEventRecord: Codable, Sendable, Equatable {
 // MARK: - Registry
 
 public final class DeviceRegistry: @unchecked Sendable {
-    private let db: SQLiteDatabase
+    public let db: SQLiteDatabase
 
     public init(db: SQLiteDatabase) throws {
         self.db = db
@@ -382,13 +382,13 @@ public final class DeviceRegistry: @unchecked Sendable {
         return arr
     }
 
-    static let isoFormatter: ISO8601DateFormatter = {
+    public static let isoFormatter: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
 
-    static let isoFormatterNoFraction = ISO8601DateFormatter()
+    public static let isoFormatterNoFraction = ISO8601DateFormatter()
 
     static func parseDate(_ s: String) -> Date? {
         if let d = isoFormatter.date(from: s) { return d }

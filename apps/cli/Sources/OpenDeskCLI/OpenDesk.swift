@@ -15,6 +15,9 @@ struct OpenDesk: ParsableCommand {
             CopyCommand.self,
             InstallCommand.self,
             InventoryCommand.self,
+            GroupsCommand.self,
+            PowerCommand.self,
+            ScheduleCommand.self,
             TasksCommand.self,
             AuditCommand.self,
         ]
@@ -351,6 +354,280 @@ func resolveTargets(_ registry: DeviceRegistry, _ devices: String?) throws -> [D
         throw ValidationError("No SSH-capable devices registered. Run `opendesk discover-command` first.")
     }
     return sshCapable
+}
+
+// MARK: - groups
+
+struct GroupsCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Manage device groups and smart groups.",
+        subcommands: [GroupsCreate.self, GroupsList.self, GroupsAdd.self, GroupsSmart.self, GroupsShow.self]
+    )
+
+    struct GroupsCreate: ParsableCommand {
+        @Argument(help: "Group name")
+        var name: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let id = try registry.createGroup(name: name)
+            try registry.appendAudit(AuditEventRecord(action: "group.create", target: name))
+            print("Created group '\(name)' (\(id.uuidString.prefix(8)))")
+        }
+    }
+
+    struct GroupsList: ParsableCommand {
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let groups = try registry.db.query("SELECT id, name FROM groups ORDER BY name") { r in
+                (id: r.text(0) ?? "", name: r.text(1) ?? "")
+            }
+            let smart = try registry.db.query("SELECT id, name, predicate_json FROM smart_groups ORDER BY name") { r in
+                (id: r.text(0) ?? "", name: r.text(1) ?? "", predicate: r.text(2) ?? "")
+            }
+            if groups.isEmpty && smart.isEmpty { print("No groups."); return }
+            for g in groups { print("  \(String(g.id.prefix(8)))  [static]  \(g.name)") }
+            for g in smart { print("  \(String(g.id.prefix(8)))  [smart]   \(g.name)  \(g.predicate)") }
+        }
+    }
+
+    struct GroupsAdd: ParsableCommand {
+        @Argument(help: "Group name")
+        var group: String
+        @Argument(help: "Device hostname or ID prefix")
+        var device: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let groups = try registry.db.query("SELECT id FROM groups WHERE name = ? LIMIT 1", bindings: [.text(group)]) { r in
+                UUID(uuidString: r.text(0) ?? "")
+            }.compactMap { $0 }
+            guard let groupID = groups.first else {
+                throw ValidationError("Group '\(group)' not found. Create it first.")
+            }
+            let all = try registry.devices()
+            guard let device = all.first(where: { $0.hostname == device || String($0.id.uuidString.prefix(8)) == device }) else {
+                throw ValidationError("Device '\(device)' not found.")
+            }
+            try registry.addDevice(device.id, toGroup: groupID)
+            print("Added \(device.hostname) to \(group)")
+        }
+    }
+
+    struct GroupsSmart: ParsableCommand {
+        @Argument(help: "Smart group name")
+        var name: String
+        @Argument(help: "Predicate JSON, e.g. '{\"op\":\"AND\",\"clauses\":[{\"field\":\"architecture\",\"op\":\"=\",\"value\":\"arm64\"}]}'")
+        var predicate: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            _ = try SmartGroupPredicate.decode(predicate) // validate
+            let registry = try Bootstrap.registry(path: db)
+            let id = UUID()
+            try registry.db.run("INSERT INTO smart_groups (id, name, predicate_json) VALUES (?, ?, ?)",
+                                bindings: [.text(id.uuidString), .text(name), .text(predicate)])
+            try registry.appendAudit(AuditEventRecord(action: "smart_group.create", target: name))
+            print("Created smart group '\(name)' (\(id.uuidString.prefix(8)))")
+        }
+    }
+
+    struct GroupsShow: ParsableCommand {
+        @Argument(help: "Group name (static or smart)")
+        var group: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            // Smart group: evaluate predicate.
+            let smart = try registry.db.query("SELECT id, predicate_json FROM smart_groups WHERE name = ? LIMIT 1", bindings: [.text(group)]) { r in
+                (id: r.text(0) ?? "", predicate: r.text(1) ?? "")
+            }
+            if let s = smart.first {
+                let predicate = try SmartGroupPredicate.decode(s.predicate)
+                let members = try registry.devices().filter { predicate.matches($0) }
+                print("Smart group '\(group)' matches \(members.count) device(s):")
+                members.forEach { print("  \($0.hostname) [\($0.architecture ?? "?") os \($0.osVersion ?? "?")]") }
+                return
+            }
+            // Static group.
+            let groups = try registry.db.query("SELECT id FROM groups WHERE name = ? LIMIT 1", bindings: [.text(group)]) { r in
+                UUID(uuidString: r.text(0) ?? "")
+            }.compactMap { $0 }
+            guard let groupID = groups.first else {
+                throw ValidationError("Group '\(group)' not found.")
+            }
+            let members = try registry.groupMembers(group: groupID)
+            print("Group '\(group)' contains \(members.count) device(s):")
+            members.forEach { print("  \($0.hostname)") }
+        }
+    }
+}
+
+// MARK: - power
+
+struct PowerCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Power management: wake (WoL), sleep, restart, shutdown, logout.",
+        subcommands: [PowerWake.self, PowerSleep.self, PowerRestart.self, PowerShutdown.self, PowerLogout.self]
+    )
+
+    struct PowerWake: ParsableCommand {
+        @Argument(help: "Target MAC address (AA:BB:CC:DD:EE:FF)")
+        var mac: String
+        @Option(help: "Broadcast address")
+        var broadcast: String = "255.255.255.255"
+
+        func run() throws {
+            let controller = PowerController(ssh: SSHTransport())
+            try controller.wake(mac: mac, broadcast: broadcast)
+            try Bootstrap.registry(path: nil).appendAudit(AuditEventRecord(action: "power.wake", target: mac))
+            print("Wake-on-LAN packet sent to \(mac) via \(broadcast)")
+        }
+    }
+
+    struct PowerSleep: ParsableCommand {
+        @Argument(help: "Device hostname or ID prefix")
+        var device: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let targets = try resolveTargets(registry, device)
+            let controller = PowerController(ssh: SSHTransport())
+            for d in targets {
+                let host = SSHHost(hostname: d.ips.first ?? d.hostname)
+                let r = try runAsync { try await controller.sleep(on: host) }
+                print("\(d.hostname): exit \(r.exitCode)")
+            }
+            try registry.appendAudit(AuditEventRecord(action: "power.sleep", target: device))
+        }
+    }
+
+    struct PowerRestart: ParsableCommand {
+        @Argument(help: "Device hostname or ID prefix")
+        var device: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let targets = try resolveTargets(registry, device)
+            let controller = PowerController(ssh: SSHTransport())
+            for d in targets {
+                let host = SSHHost(hostname: d.ips.first ?? d.hostname)
+                let r = try runAsync { try await controller.restart(on: host) }
+                print("\(d.hostname): exit \(r.exitCode)")
+            }
+            try registry.appendAudit(AuditEventRecord(action: "power.restart", target: device))
+        }
+    }
+
+    struct PowerShutdown: ParsableCommand {
+        @Argument(help: "Device hostname or ID prefix")
+        var device: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let targets = try resolveTargets(registry, device)
+            let controller = PowerController(ssh: SSHTransport())
+            for d in targets {
+                let host = SSHHost(hostname: d.ips.first ?? d.hostname)
+                let r = try runAsync { try await controller.shutdown(on: host) }
+                print("\(d.hostname): exit \(r.exitCode)")
+            }
+            try registry.appendAudit(AuditEventRecord(action: "power.shutdown", target: device))
+        }
+    }
+
+    struct PowerLogout: ParsableCommand {
+        @Argument(help: "Device hostname or ID prefix")
+        var device: String
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let targets = try resolveTargets(registry, device)
+            let controller = PowerController(ssh: SSHTransport())
+            for d in targets {
+                let host = SSHHost(hostname: d.ips.first ?? d.hostname)
+                let r = try runAsync { try await controller.logoutUser(on: host) }
+                print("\(d.hostname): exit \(r.exitCode)")
+            }
+            try registry.appendAudit(AuditEventRecord(action: "power.logout", target: device))
+        }
+    }
+}
+
+// MARK: - schedule
+
+struct ScheduleCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Manage task schedules (RRULE / one-shot / on-reconnect).",
+        subcommands: [ScheduleCreate.self, ScheduleList.self]
+    )
+
+    struct ScheduleCreate: ParsableCommand {
+        @Option(help: "RRULE, e.g. 'FREQ=WEEKLY;BYDAY=FR;BYHOUR=22'")
+        var rrule: String?
+        @Option(help: "One-shot ISO8601 run time, e.g. 2026-09-14T09:00:00Z")
+        var at: String?
+        @Flag(help: "Run when host reconnects")
+        var onReconnect = false
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            guard rrule != nil || at != nil || onReconnect else {
+                throw ValidationError("Provide --rrule, --at, or --on-reconnect.")
+            }
+            if let rrule { _ = try Scheduler.parseRRULE(rrule) }
+            let runAt: Date? = at.map { dateStr -> Date in
+                let formats = [DeviceRegistry.isoFormatter, DeviceRegistry.isoFormatterNoFraction]
+                for f in formats {
+                    if let d = try? f.date(from: dateStr) { return d }
+                }
+                fatalError("Invalid --at date format: \(dateStr)")
+            }
+            let registry = try Bootstrap.registry(path: db)
+            let scheduler = Scheduler(registry: registry)
+            let s = try scheduler.createSchedule(ScheduleRecord(rrule: rrule, runAt: runAt, onReconnect: onReconnect))
+            try registry.appendAudit(AuditEventRecord(action: "schedule.create", target: s.id.uuidString))
+            print("Created schedule \(s.id.uuidString.prefix(8))")
+        }
+    }
+
+    struct ScheduleList: ParsableCommand {
+        @Option(name: .shortAndLong, help: "Database path")
+        var db: String?
+
+        func run() throws {
+            let registry = try Bootstrap.registry(path: db)
+            let scheduler = Scheduler(registry: registry)
+            let all = try scheduler.schedules()
+            if all.isEmpty { print("No schedules."); return }
+            for s in all {
+                var desc = s.id.uuidString.prefix(8).description
+                if let rrule = s.rrule { desc += "  rrule: \(rrule)" }
+                if let runAt = s.runAt { desc += "  at: \(runAt)" }
+                if s.onReconnect { desc += "  on-reconnect" }
+                print("  \(desc)")
+            }
+        }
+    }
 }
 
 // MARK: - tasks
