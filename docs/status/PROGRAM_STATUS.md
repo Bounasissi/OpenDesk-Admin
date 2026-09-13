@@ -20,7 +20,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 02 | Clean-Room Decomposition | EXECUTED-LAWFUL-BOUNDARY (Amendment A1) | bundle observations ARD-BUNDLE-001..003 committed; 18-experiment corpus + ARD_FEATURE_PARITY.md; live experiments GATED on ARD admin install |
 | 03 | Architecture Foundation | **PLAN COMPLETE** | commit a0b5939; 104/104 tests (12 new migration/domain tests); CI green run 34781650028; Domain types + 8 typed errors + SQLiteMigrator 001 (16 core tables) + repositories + Keychain seam + AppBootstrap wiring |
 | 04 | Device Discovery / Registry | **PLAN COMPLETE** | commit 240c752..HEAD; 114/114 tests (10 new discovery/registry tests); ADR-0007 recorded; CIDR scan + reconciliation + smart groups + device states implemented; live CLI discovery verified against local RFB |
-| 05 | Credentials / Security Foundation | NOT STARTED (Amendment A1 appended) | — |
+| 05 | Credentials / Security Foundation | **PLAN COMPLETE** | commit 086a024; 124/124 tests; CI green run 34782529095; credential service (5 kinds incl. certificates, Keychain+reference rows, rotation/removal), RBAC 13 privileges w/ audit, host-key TOFU policy (migration 002), redaction filter |
 | 06 | RFB Remote Control | NOT STARTED (Amendment A1 appended; 06A active within window) | — |
 | 07 | Commands / Files / Packages / Power | NOT STARTED (Amendment A1 appended) | — |
 | 08 | Task Engine / Scheduler | NOT STARTED (Amendment A1 appended) | — |
@@ -173,4 +173,19 @@ DOCUMENTATION: Plan 04 A1 satisfied — probe set explicit (5900/22/3283/agent),
 EXIT CRITERIA: discover, manually add, persist, remove, group devices — MET (CLI discover live-verified against local RFB service; hosts add/list/remove pre-existing + verified)
 RESULT: PASS
 NEXT PLAN: 05
+```
+
+```text
+PLAN: 05-IDENTITY-SECRETS-SECURITY
+COMMIT RANGE: a6584fb..086a024 (plan 05 series)
+BUILD: PASS (0 warnings)
+TESTS: 124/124 PASS (10 new: credential ×4, RBAC ×2, host-key ×2, redaction, migration 002)
+SECURITY: no durable plaintext secrets (verified: secrets absent from every credentials row); rotation/removal lifecycle; 13 RBAC privileges incl. lock; TOFU + mismatch = hard security event + audit; redaction filter ready for Plan 18
+REVIEW: credentials schema CHECK tokens mapped (storageValue); FK enforcement correct (tests create devices first); schema change via NEW migration 002 per DATA_MODEL §8
+DEFECTS: 2 found+fixed during TDD (scalar/stringColumn bindings overloads; storage-token mapping)
+EXTERNAL GATES: none for this plan
+DOCUMENTATION: Plan 05 A1.1/A1.2/A1.3 satisfied; DATA_MODEL §4 secret-handling enforced
+EXIT CRITERIA: Keychain-backed secrets behind Plan 03 seam; credential CRUD for full type set; privilege model + authorization service; host-key policy engine; audit emission; redaction — ALL MET
+RESULT: PASS
+NEXT PLAN: 06
 ```
