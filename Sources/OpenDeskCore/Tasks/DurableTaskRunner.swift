@@ -176,6 +176,12 @@ public final class DurableTaskRunner: @unchecked Sendable {
             try tasks.recordTransition(taskID: taskID, from: current, to: .success, detail: "all targets succeeded")
         } else if targetStates.allSatisfy({ ["failed", "cancelled"].contains($0) }) {
             try tasks.recordTransition(taskID: taskID, from: current, to: .failed, detail: "all targets failed/cancelled")
+        } else if targetStates.contains("failed") || targetStates.contains("cancelled") {
+            // Mixed outcome: no targets remain pending and at least one failed
+            // → the task record finalizes as failed (partial fleet failure
+            // survives in per-target results; retries create new work —
+            // Plan 08 §6 retry classifications).
+            try tasks.recordTransition(taskID: taskID, from: current, to: .failed, detail: "completed with per-target failures")
         }
     }
 }

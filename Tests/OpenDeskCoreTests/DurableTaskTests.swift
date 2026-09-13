@@ -84,7 +84,9 @@ final class DurableTaskTests: XCTestCase {
         try runner.dispatchPending()
         let repo = SQLiteTaskRepository(db: db)
         let loaded = try repo.load(task.id)
-        XCTAssertEqual(loaded?.state, .running, "fleet task continues with surviving targets")
+        // Mixed outcome finalizes the task record as failed (per-target
+        // results retain both outcomes; retries create new work — Plan 08 §6).
+        XCTAssertEqual(loaded?.state, .failed)
         let results = try db.query("SELECT device_id, state FROM task_targets WHERE task_id = ?", bindings: [task.id.rawValue])
         XCTAssertEqual(results.count, 2, "per-target results recorded")
         let states = Set(results.compactMap { $0.opt("state") })
