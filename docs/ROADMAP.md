@@ -18,14 +18,15 @@
 - [x] Raw framebuffer update decoding + input event messages (KeyEvent/PointerEvent/CutText)
 - [x] CI workflow (GitHub Actions, macos-14, swift build + test)
 
-## Phase 3 — GUI Dashboard (SwiftUI) — started ✅ (core views working)
+## Phase 3 — GUI Dashboard (SwiftUI) — core complete ✅
 - [x] Roster view with groups + add-host bar
 - [x] Bonjour discovery section in sidebar
 - [x] Task runner UI with live results
 - [x] Inventory report viewer
 - [x] Screen connect + handshake status view
-- [ ] Tiled screen observation windows (bind decoded framebuffer to renderer)
-- [ ] Control mode input routing (CGEvent mapping to RFB KeyEvent/PointerEvent)
+- [x] Single-screen live observation (ScreenStreamer → Screen Viewer window)
+- [x] Control mode input routing (NSEvent → KeysymMap → RFB KeyEvent/PointerEvent)
+- [ ] Tiled multi-screen observation (grid of several hosts)
 
 ## Phase 4 — Advanced
 - [ ] Scheduled tasks (launchd integration)
