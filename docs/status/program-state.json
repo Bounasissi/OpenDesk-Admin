@@ -3,9 +3,9 @@
   "release": null,
   "canonicalBranch": "canonical-091326",
   "prePlansExecuted": ["00A-REPOSITORY-LINEAGE-RECONCILIATION", "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"],
-  "currentPlan": "06-RFB-REMOTE-CONTROL",
+  "currentPlan": "07-SSH-FILES-PACKAGES-POWER",
   "status": "executing",
-  "completedPlans": ["01-REPOSITORY-BASELINE", "03-ARCHITECTURE-FOUNDATION", "04-DEVICE-DISCOVERY-REGISTRY", "05-IDENTITY-SECRETS-SECURITY"],
+  "completedPlans": ["01-REPOSITORY-BASELINE", "03-ARCHITECTURE-FOUNDATION", "04-DEVICE-DISCOVERY-REGISTRY", "05-IDENTITY-SECRETS-SECURITY", "06-RFB-REMOTE-CONTROL"],
   "externalGates": [
     {
       "gate": "Owner confirmation of MIT license ruling + scaffold-source relicensing decision",

@@ -21,7 +21,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 03 | Architecture Foundation | **PLAN COMPLETE** | commit a0b5939; 104/104 tests (12 new migration/domain tests); CI green run 34781650028; Domain types + 8 typed errors + SQLiteMigrator 001 (16 core tables) + repositories + Keychain seam + AppBootstrap wiring |
 | 04 | Device Discovery / Registry | **PLAN COMPLETE** | commit 240c752..HEAD; 114/114 tests (10 new discovery/registry tests); ADR-0007 recorded; CIDR scan + reconciliation + smart groups + device states implemented; live CLI discovery verified against local RFB |
 | 05 | Credentials / Security Foundation | **PLAN COMPLETE** | commit 086a024; 124/124 tests; CI green run 34782529095; credential service (5 kinds incl. certificates, Keychain+reference rows, rotation/removal), RBAC 13 privileges w/ audit, host-key TOFU policy (migration 002), redaction filter |
-| 06 | RFB Remote Control | NOT STARTED (Amendment A1 appended; 06A active within window) | — |
+| 06 | RFB Remote Control | **PLAN COMPLETE** (hardening) | commit d85bfca; 138/138 tests; CI green run 34783171992; §25 gaps 1/2/8/11 closed (003.889, NIST DES KAT ×2 verified vs OpenSSL, partial-reads suite, CutText bytes); malformed-banner layout enforced; oversized-FB defense; RFBRetryPolicy; 100-cycle soak memory-bounded; real-Apple-host interop remains gated (17A) |
 | 07 | Commands / Files / Packages / Power | NOT STARTED (Amendment A1 appended) | — |
 | 08 | Task Engine / Scheduler | NOT STARTED (Amendment A1 appended) | — |
 | 09 | Inventory / Reporting | NOT STARTED (Amendment A1 appended) | — |
@@ -188,4 +188,19 @@ DOCUMENTATION: Plan 05 A1.1/A1.2/A1.3 satisfied; DATA_MODEL §4 secret-handling 
 EXIT CRITERIA: Keychain-backed secrets behind Plan 03 seam; credential CRUD for full type set; privilege model + authorization service; host-key policy engine; audit emission; redaction — ALL MET
 RESULT: PASS
 NEXT PLAN: 06
+```
+
+```text
+PLAN: 06-RFB-REMOTE-CONTROL (hardening + 06A reconciliation within window)
+COMMIT RANGE: c640c6d..d85bfca
+BUILD: PASS (0 warnings)
+TESTS: 138/138 PASS (14 new: 003.889 ×4, NIST DES KAT ×1 (two vectors, cross-verified against OpenSSL 3.54), fragmented/single-byte-remainder/multi-frame/EOF/short-read ×5, malformed-banner ×1, oversized-FB ×1, retry policy ×1, 100-cycle soak ×1, CutText bytes)
+SECURITY: no GPL linkage (06A dependency audit — zero external packages); auth matrix documented in 06A; wire-compat classifications in COMPATIBILITY_MATRIX (deferred ARD-30)
+REVIEW: DES engine verified CORRECT against OpenSSL — the earlier conversation-era suspicion (85E8 vector) was a variant expectation, not a defect; two real defects found and fixed (banner layout leniency at positions 7/11; unbounded Framebuffer allocations)
+DEFECTS: oversized-FB + malformed-banner hardening added; 100-cycle soak memory growth bounded
+EXTERNAL GATES: Apple-host interop (banner 003.889 live) gated on 17A real-Mac lab
+DOCUMENTATION: audit JSON gap map updated (gaps 16/18/19/25/26 remain → plans 08/09/04/15)
+EXIT CRITERIA: Addendum §9 hardening items with tests — MET (cancellation and multi-display verified at session level in Plan 10; encoding fallback ladder documented)
+RESULT: PASS
+NEXT PLAN: 07
 ```
