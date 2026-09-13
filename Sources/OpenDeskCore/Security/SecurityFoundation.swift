@@ -201,7 +201,7 @@ public func redactSecrets(in text: String, secrets: [String]) -> String {
 public func redactParameterKeys(in text: String) -> String {
     let sensitiveKeys = ["password", "secret", "token", "vncpassword", "credential", "privatekey", "key"]
     var result = text
-    for key in sensitiveKeys {
+    for _ in sensitiveKeys {
         // Scan JSON-style "key": "value" pairs. The key's OPENING quote is the
         // second quote before the colon (the last one is its closing quote).
         var searchStart = result.startIndex
