@@ -118,3 +118,27 @@ A supported Mac with Remote Management enabled can be observed and controlled re
 ## 8. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `07-SSH-FILES-PACKAGES-POWER`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §9)
+
+The conversation-derived implementation (Raw framebuffer decoding, Hextile, CGImage/NSImage renderer, ScreenStreamer, keyboard, pointer, scroll, clipboard/CutText, tiled observation) is verified on the canonical branch — retain and verify all of it (see `docs/status/CAPABILITY_AUDIT.md`). The following production-hardening requirements were NOT demonstrated in any conversation and are mandatory for Plan 06 exit:
+
+```text
+connection cancellation (prompt, resource-freeing)
+bounded reconnect (attempt cap, backoff, jitter)
+multi-display behavior (display enumeration, per-display observe)
+resolution changes (live display reconfiguration)
+pixel-format changes (server-initiated format negotiation)
+international keyboards (keysym correctness beyond US layout)
+modifier-key correctness (CapsLock, Fn, right-hand modifiers)
+clipboard limits (size caps, sanitization)
+malformed server input (fuzzed decoder paths, no crash/OOM)
+oversized framebuffer defense (dimension caps before allocation)
+encoding negotiation fallback (hextile → copyrect → raw ladder)
+resource cleanup (sockets, buffers, timers on every exit path)
+100-cycle connection soak (already §6 — verify bounded memory)
+```
+
+Also enforce the conversation-derived regression invariants (Addendum §1, mapped in `docs/status/CAPABILITY_AUDIT.md` §Required tests): RFB `003.889` safe parse, DES known-answer vector, `FramebufferUpdateRequest` 10-byte wire format with both X and Y, partial-socket-read handling, loopback integration server (handshake, no-auth, VNC auth, wrong-password rejection, framebuffer, keyboard, pointer, clipboard).

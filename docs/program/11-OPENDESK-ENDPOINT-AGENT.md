@@ -130,3 +130,15 @@ A managed endpoint can perform the v1 management operations without requiring Re
 ## 12. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `12-CLI-API-SHORTCUTS`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §18)
+
+Endpoint agent is a major unfinished product objective — no conversation implemented it. §2–§8 stand unchanged. Addendum tightenings:
+
+- §6 protocol must support at least **one-version admin/agent compatibility skew** (agent N works with admin N and N+1).
+- Explicit capability negotiation over the `capabilities[]` field (agent declares what it can do; admin degrades gracefully).
+- The agent must eventually permit **administration without requiring SSH** — SSH is a fallback transport, never the agent's dependency.
+- §2 process model: LaunchDaemon + per-user LaunchAgent + SMAppService where appropriate; authenticated XPC/local IPC (already §4).
+- Full responsibility list from Addendum §18 required for exit: enrollment, identity, version/capability negotiation, heartbeats, durable jobs, inventory, file ops, packages, power ops, user notifications, clipboard, screen capture cooperation, audit logging, updates.

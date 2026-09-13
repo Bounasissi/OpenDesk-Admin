@@ -127,3 +127,24 @@ Inventory survives application restarts and meaningful fleet reports can be expo
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `10-MULTI-OBSERVE-SESSIONS`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §16)
+
+### A1.1 Inventory architecture beyond collection (extends §3/§6)
+
+Required architecture additions:
+
+```text
+historical snapshots (already §3 — make retention policy explicit)
+device-vs-previous diff (already §6 drift — keep)
+device-vs-device comparison (NEW)
+group aggregates (NEW: counts by OS, arch, app presence, agent state)
+```
+
+Drift detection keeps the §6 list and adds: storage-threshold alerting configured per group, agent disappearance as a first-class finding, management-status change surfaced in device state.
+
+### A1.2 Collectors acceptance check (§2)
+
+§2's collector list matches the addendum target (hardware, OS, storage, network, display, applications, processes, users, login history, file search, management status, agent status/health). Exports: CSV (RFC-4180 behavior already reported and tested) + JSON. Both are v1 requirements.

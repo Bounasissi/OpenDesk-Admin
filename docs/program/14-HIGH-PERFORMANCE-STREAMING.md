@@ -121,3 +121,11 @@ LAN remote control is visibly smoother than fallback RFB while remaining stable 
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json`.
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §11)
+
+**Positioning rule:** the conversation-derived Hextile implementation (with a reported synthetic 128× bandwidth-improvement case) is an RFB fallback optimization — verified and retained on the canonical branch. It is **not** the high-performance end state and must not be presented as one. Plan 14 remains the OpenDesk-native path (ScreenCaptureKit → VideoToolbox H.264 initially, HEVC where beneficial, hardware decode, Metal rendering, adaptive bitrate/resolution/FPS, audio, multi-display, telemetry, secure transport).
+
+Desired later capability (post-v1, retained in `docs/product/POST_V1_ROADMAP.md`): 30/60 FPS, 4K, HDR where practical, audio, low latency.

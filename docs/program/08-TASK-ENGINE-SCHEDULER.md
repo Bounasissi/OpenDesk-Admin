@@ -148,3 +148,26 @@ Closing and reopening OpenDesk cannot lose scheduled or running task history.
 ## 12. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `09-INVENTORY-REPORTING`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §14, §15)
+
+### A1.1 Durable task infrastructure (extends §2/§3)
+
+The conversation-derived implementation (bounded concurrent fleet execution, saved tasks) is retained and verified. Durable-task required behavior beyond it:
+
+```text
+offline target waits (WAITING_FOR_TARGET, not failed)
+reconnect executes (dispatch on availability)
+restart survives (app restart resumes task state)
+partial fleet failure survives (per-target independence)
+duplicate execution prevented (idempotency key enforcement)
+cancellation persisted (CANCELLED survives restart)
+```
+
+Task metadata must include: idempotency key, deadline, retry policy, correlation ID, resolved target snapshot, dependencies, created/started/finished timestamps, per-host result. §3 already lists most — treat this list as the acceptance checklist.
+
+### A1.2 Scheduler persistence (extends §5)
+
+Conversation-derived 5-second polling, interval + daily triggers, run-now, launchd wrapper are retained. §5's scheduler types are already complete. **Addendum requirement:** schedules live in the canonical database — critical schedule state must not remain split indefinitely across unrelated JSON files. Migration path: TaskStore/ScheduleStore → SQLite with schema-versioned migration (Plan 03 data model), keeping JSON import for one release cycle.

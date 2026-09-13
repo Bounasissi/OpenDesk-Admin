@@ -128,3 +128,38 @@ No plaintext credential exists outside process memory/Keychain, and sensitive ac
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `06-RFB-REMOTE-CONTROL`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §7, §8)
+
+### A1.1 Credential coverage (tighten §3)
+
+Conversation-derived GUI accepts optional VNC passwords and SSH-based workflows exist. v1 still requires the full set:
+
+```text
+macOS Keychain storage
+CredentialID indirection (SQLite → reference only)
+SSH key storage/reference
+VNC secret storage
+agent identity storage
+certificate storage
+secret redaction (logging pipeline)
+credential rotation/removal
+```
+
+No durable plaintext secrets anywhere. Add `certificate` to the §3 credential-type list; add explicit rotation/removal semantics (revoke → rekey → verify revoked) to the credential service.
+
+### A1.2 RBAC privilege list (concretize §5)
+
+Add `lock` to the privilege enum. Complete v1 set:
+
+```text
+observe, control, clipboard, files.read, files.write,
+install, execute, power, lock, message, inventory,
+configuration, administration
+```
+
+### A1.3 Audit record fields (concretize §6)
+
+Every privileged operation records: `actor`, `target`, `action`, `timestamp`, `correlation ID`, `redacted parameters`, `result`. Single-user v1 may use one administrator identity — the authorization model must already exist and every enforcement point must call it.

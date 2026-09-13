@@ -142,3 +142,24 @@ A release tag can create a signed, notarized, stapled, updateable artifact witho
 ## 11. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `21-BETA-RELEASE-CANDIDATE`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §26)
+
+The conversation-derived `.app` bundle + ad-hoc signing is a development milestone only. Production requires the full chain — add explicit items to §2–§8:
+
+```text
+Developer ID Application signing
+Hardened Runtime (already §6)
+reviewed entitlements (minimum necessary set)
+secure timestamp (-timestamp flag, verified in notarization log)
+notarization + stapling (already §5)
+Gatekeeper assessment (spctl check on the public artifact)
+DMG/ZIP release artifact + checksums + SBOM (already §8)
+release notes + source tag (already §8)
+stable update feed (Sparkle 2 §7, Ed25519, monotonic versions, rollback)
+signing/notarization credentials only in CI secret storage — never in repo
+```
+
+Ad-hoc signed artifacts must never be published as releases.

@@ -85,3 +85,14 @@ Selecting a thumbnail promotes that session without full reconnect where feasibl
 ## 9. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `11-OPENDESK-ENDPOINT-AGENT`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §10)
+
+The conversation-derived tiled observation is capped at 1–4 columns. The broader requirement is **resource-aware multi-observe**: §3 quality tiers + §4 grid (2/4/8/16) + §5 promotion-without-reconnect already encode the target. Add the verification requirement:
+
+- Test up to 2, 4, 8, 16 simultaneous visible/synthetic sessions.
+- Verify **bounded**: CPU, memory, threads, sockets, bandwidth at each tier (measurement harness in Plan 17 §5 style).
+- Session manager is central (single orchestrating type); connections are not owned by individual views.
+- Promotion must not require unnecessary reconnect ( renegotiate pixel format/refresh first).

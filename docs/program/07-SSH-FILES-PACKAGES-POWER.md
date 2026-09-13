@@ -139,3 +139,47 @@ One operation can target one Mac or a group while returning independent, structu
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `08-TASK-ENGINE-SCHEDULER`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §12, §13)
+
+### A1.1 SSH tunneling is a general remote-connectivity policy (extends §3)
+
+The conversation-derived `ssh -N -T -L localPort:localhost:5900` tunnel is retained. Generalize it with:
+
+```text
+tunnel lifecycle management (start/stop/status)
+reconnect with backoff
+process cleanup on app exit and crash
+port collision handling
+host-key validation (Plan 05 policy)
+identity selection per device
+timeouts (connect, idle, negotiation)
+diagnostics (state, last error, endpoint)
+```
+
+Post-v1 connectivity objective: Tailscale-native workflows. **Do not build custom cloud relay infrastructure before it is justified** (Charter §6 scope discipline).
+
+### A1.2 File distribution full contract (extends §4/§5)
+
+Conversation implementation covers rsync/scp push/pull, installer -pkg, plist staging, defaults import, byhost domains — retain all. The full v1 contract additionally requires:
+
+```text
+push and pull
+recursive directories
+overwrite policy (explicit choice, not accidental)
+rename-on-conflict option
+timestamps preserved where supported
+permissions preserved where supported
+checksum verification (SHA-256; reference scaffold Transfers.swift)
+progress reporting
+cancellation
+partial-failure reporting per item
+resume where supported
+safe staging cleanup (no orphan temp files)
+parallel transfer limits (per-host and fleet)
+drag/drop GUI path
+```
+
+Package installation must verify: local package integrity, remote checksum, installer result, staging cleanup, optional restart, per-device outcome recorded in the task result.

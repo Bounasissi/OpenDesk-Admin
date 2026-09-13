@@ -110,3 +110,44 @@ An administrator can discover, manually add, persist, remove, and group devices.
 ## 6. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `05-IDENTITY-SECRETS-SECURITY`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §5, §6, §17)
+
+### A1.1 Discovery breadth is not satisfied by Bonjour alone
+
+Conversation 1 reported `_rfb._tcp` browsing only. That does not satisfy Plan 04. §2 already requires the full set; make the concrete probes explicit:
+
+```text
+manual hostname — required
+IPv4 — required
+IPv6 — required
+Bonjour/mDNS — required
+CIDR scan — required
+RFB probe (5900) — required
+SSH probe (22) — required
+ARD/reporting probe (3283) — required
+OpenDesk Agent probe — required (project-defined port)
+```
+
+The conversation-derived implementation covers only Bonjour. CIDR scan, capability probes, and dedupe are VERIFIED-MISSING on the canonical branch → implementation tasks in this plan (reference design: scaffold `Discovery.swift`, branch `OG-Output-Plan-0913`).
+
+### A1.2 Identity reconciliation signals (concretize §2.4)
+
+Reconcile device identity across: DHCP address changes, multiple NICs, hostname changes, Bonjour name changes, IPv4/IPv6 coexistence. Stable-signal confidence order: hardware MAC → machine UUID (agent) → SSH host key → hostname → subnet correlation.
+
+### A1.3 Smart groups are unconditional (tighten §2.6)
+
+Replace "Smart-group predicate engine follows once device properties exist" with: Smart Groups are a v1 requirement (Program Charter §3.1). Implement predicate-based groups over fields including:
+
+```text
+OS version, architecture, online state, installed software,
+agent state, network, inventory values, capability flags
+```
+
+**Persist group definitions (the predicate), not only resolved membership.** Resolved membership is derived and cacheable; definitions are source of truth.
+
+### A1.4 Shared-filesystem multi-admin is an experiment, not production architecture (Addendum §17)
+
+The implementation history proposes pointing multiple admins at one shared SQLite file. Treat as an experiment only. Validate before any multi-admin claim: locking semantics, concurrent writers, network-filesystem behavior, sync-provider conflicts, corruption recovery, schema migrations, backup, conflict resolution. If unsafe (expected on SMB/AFP/NFS + sync services), the production design is `local SQLite + authenticated coordination/API service`. **Single-admin local SQLite remains the preferred v1 default.** Record outcome as an ADR before Plan 05 builds on it.

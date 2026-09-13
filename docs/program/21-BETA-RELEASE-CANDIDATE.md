@@ -148,3 +148,14 @@ A release candidate passes the complete release suite using the exact public-dis
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `22-PRODUCTION-LAUNCH`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §27)
+
+`v0.3.0` (tag on `initial-091396`) must not be treated as v1 readiness merely because much functionality exists. §2–§5 milestones stand. Additions:
+
+- Alpha core (§2) explicitly includes: registry, remote control, commands, file transfer, packages, tasks, inventory.
+- Upgrade testing (§6) must cover the **full prerelease chain**: alpha → beta → RC → v1.0.0, not only beta→RC and RC→RC.
+- RC = no new features; run the complete public-artifact acceptance suite (§5) from the actual signed/notarized public artifact.
+- Historical passing-test counts from conversations (22/45/54/67/80/88/92) are not release evidence — only the current canonical branch's current test result counts (`docs/status/CAPABILITY_AUDIT.md`).
