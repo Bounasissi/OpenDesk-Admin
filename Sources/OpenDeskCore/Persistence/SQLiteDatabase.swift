@@ -63,10 +63,38 @@ public final class SQLiteDatabase: @unchecked Sendable {
         }
     }
 
+    public func stringColumn(_ sql: String, bindings: [String]) throws -> [String] {
+        try queue.sync {
+            try queryNow(sql, bindings: bindings.map(Optional.init)).compactMap { row in row.values.values.first ?? nil }
+        }
+    }
+
+    public func stringColumn(_ sql: String, bindings: [String?]) throws -> [String] {
+        try queue.sync {
+            try queryNow(sql, bindings: bindings).compactMap { row in row.values.values.first ?? nil }
+        }
+    }
+
     /// Convenience: scalar string lookup.
     public func scalar(_ sql: String) throws -> String? {
         try queue.sync {
             let rows = try queryNow(sql)
+            guard let row = rows.first else { return nil }
+            return row.values.values.first ?? nil
+        }
+    }
+
+    public func scalar(_ sql: String, bindings: [String]) throws -> String? {
+        try queue.sync {
+            let rows = try queryNow(sql, bindings: bindings.map(Optional.init))
+            guard let row = rows.first else { return nil }
+            return row.values.values.first ?? nil
+        }
+    }
+
+    public func scalar(_ sql: String, bindings: [String?]) throws -> String? {
+        try queue.sync {
+            let rows = try queryNow(sql, bindings: bindings)
             guard let row = rows.first else { return nil }
             return row.values.values.first ?? nil
         }

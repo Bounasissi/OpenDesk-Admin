@@ -15,14 +15,14 @@ final class MigrationTests: XCTestCase {
         let db = try tempDB()
         let runner = SQLiteMigrator(db: db)
         let applied = try runner.run()
-        XCTAssertEqual(applied, [1])
-        XCTAssertEqual(try runner.currentVersion(), 1)
+        XCTAssertEqual(applied, [1, 2])
+        XCTAssertEqual(try runner.currentVersion(), 2)
     }
 
     func testMigrationsAreIdempotent() throws {
         let db = try tempDB()
         let runner = SQLiteMigrator(db: db)
-        XCTAssertEqual(try runner.run().count, 1)
+        XCTAssertEqual(try runner.run().count, 2)
         XCTAssertEqual(try runner.run().count, 0, "second run must apply nothing")
     }
 
@@ -34,6 +34,7 @@ final class MigrationTests: XCTestCase {
             "groups", "group_memberships", "smart_groups", "tasks", "task_targets",
             "task_events", "task_templates", "schedules", "sessions",
             "inventory_snapshots", "audit_events", "agent_status", "schema_migrations",
+            "host_key_records",
         ]
         let tables = try db.stringColumn("SELECT name FROM sqlite_master WHERE type='table'")
         XCTAssertTrue(expected.isSubset(of: Set(tables)), "missing: \(expected.subtracting(Set(tables)))")

@@ -67,7 +67,7 @@ public struct SQLiteMigrator {
 /// Migration catalog. Schema changes require a NEW numbered migration —
 /// never edit an applied one (DATA_MODEL §8).
 public enum MigrationCatalog {
-    public static let all: [MigrationStep] = [migration001]
+    public static let all: [MigrationStep] = [migration001, migration002]
 
     /// 001 — initial core schema (Plan 03 §4; DATA_MODEL §2; secret-free by rule).
     static let migration001 = MigrationStep(version: 1, sql: """
@@ -219,5 +219,15 @@ public enum MigrationCatalog {
     CREATE INDEX idx_tasks_state ON tasks(state);
     CREATE INDEX idx_task_events_task ON task_events(task_id);
     CREATE INDEX idx_audit_events_action ON audit_events(action);
+    """)
+
+    /// 002 — host-key policy records (Plan 05 §4; host-key policy metadata is
+    /// permitted in SQLite per DATA_MODEL §4; fingerprints, never private keys).
+    static let migration002 = MigrationStep(version: 2, sql: """
+    CREATE TABLE IF NOT EXISTS host_key_records (
+        host          TEXT PRIMARY KEY,
+        fingerprint   TEXT NOT NULL,
+        recorded_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    );
     """)
 }
