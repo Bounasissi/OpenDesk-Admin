@@ -92,7 +92,7 @@ struct CollectInventoryIntent: AppIntent {
             let task = try runner.submit(type: "inventory.collect", deviceIDs: [])
             return .result(dialog: "Inventory collection queued (\(task.id.rawValue.prefix(8))…).")
         } catch {
-            return .result(dialog: "Inventory collection failed: \(error)")
+            return .result(dialog: "Inventory collection failed: \(String(describing: error))")
         }
     }
 }

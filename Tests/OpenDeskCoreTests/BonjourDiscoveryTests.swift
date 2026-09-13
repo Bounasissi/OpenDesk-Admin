@@ -11,7 +11,9 @@ final class BonjourDiscoveryTests: XCTestCase {
         // Publish under the ACTUAL Screen Sharing service type the admin app
         // browses (_rfb._tcp) — a stand-in for a real Mac advertising it.
         let service = NetService(domain: "", type: "_rfb._tcp.", name: "opendesk-selftest", port: 5901)
-        service.delegate = BonjourPublishDelegate(onPublish: { })
+        // Hold the delegate strongly: NetService.delegate is unowned(unsafe).
+        let publishDelegate = BonjourPublishDelegate(onPublish: { })
+        service.delegate = publishDelegate
         service.schedule(in: .main, forMode: RunLoop.Mode.default)
         service.publish()
 
