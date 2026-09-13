@@ -44,6 +44,39 @@ swift test                       # runs unit tests
 swift run opendesk --help        # CLI entry point
 ```
 
+## Implemented (v0.1)
+
+| Capability | Status | Module |
+|---|---|---|
+| SQLite persistence (21-table schema, WAL, FK) | **implemented** | core/SQLiteKit + DeviceRegistry |
+| Device discovery (Bonjour + CIDR scan, dedupe) | **implemented** | core/Discovery |
+| SSH command/script execution | **implemented** | core/SSHTransport |
+| Universal task engine (queue, state machine, per-target results, audit) | **implemented** | core/TaskEngine |
+| File push/pull (SFTP, SHA-256 verified) | **implemented** | core/Transfers |
+| Package install pipeline (checksum → stage → installer → cleanup) | **implemented** | core/Transfers |
+| Inventory collectors (hw/os/net/storage/apps/users) | **implemented** | core/Inventory |
+| CLI: discover / devices / exec / copy / install / inventory / tasks / audit | **implemented** | apps/cli |
+| RFB/VNC remote control (ARD auth type 30) | next | packages/rfb |
+| Groups + Smart Groups predicates | next | core |
+| Scheduler (RRULE, on-reconnect) | next | core |
+| Task Server worker (offline execution) | next | core |
+| SwiftUI admin console | next | apps/admin-macos |
+
+## CLI Usage
+
+```bash
+opendesk discover-command --cidr 192.168.1.0/24 [--no-bonjour]
+opendesk devices-command [--format json]
+opendesk exec-command "softwareupdate -l" --devices <id-or-hostname,...>
+opendesk copy-command ./file.pkg /tmp/ --devices <id-or-hostname,...>
+opendesk install-command ./file.pkg --devices <id-or-hostname,...> [--restart-policy restart]
+opendesk inventory-command --devices <id-or-hostname,...> [--json]
+opendesk tasks-command
+opendesk audit-command
+```
+
+Default database: `~/Library/Application Support/OpenDeskAdmin/opendesk.db` (override with `--db`).
+
 ## Key Documents
 
 | Document | Purpose |
