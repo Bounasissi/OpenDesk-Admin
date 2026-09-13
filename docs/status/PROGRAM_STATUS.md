@@ -19,7 +19,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 01 | Repository Baseline | **PLAN COMPLETE** | Census docs/status/REPO_CENSUS.md; make verify PASS (build + lint 0 warnings + 92/92 tests + secret-scan + license-check) 2026-09-13; ADR-0004 enforced (.v14), ADR-0006 MIT; **CI green on canonical-091326** (run 34780948563) |
 | 02 | Clean-Room Decomposition | EXECUTED-LAWFUL-BOUNDARY (Amendment A1) | bundle observations ARD-BUNDLE-001..003 committed; 18-experiment corpus + ARD_FEATURE_PARITY.md; live experiments GATED on ARD admin install |
 | 03 | Architecture Foundation | **PLAN COMPLETE** | commit a0b5939; 104/104 tests (12 new migration/domain tests); CI green run 34781650028; Domain types + 8 typed errors + SQLiteMigrator 001 (16 core tables) + repositories + Keychain seam + AppBootstrap wiring |
-| 04 | Device Discovery / Registry | NOT STARTED (Amendment A1 appended) | — |
+| 04 | Device Discovery / Registry | **PLAN COMPLETE** | commit 240c752..HEAD; 114/114 tests (10 new discovery/registry tests); ADR-0007 recorded; CIDR scan + reconciliation + smart groups + device states implemented; live CLI discovery verified against local RFB |
 | 05 | Credentials / Security Foundation | NOT STARTED (Amendment A1 appended) | — |
 | 06 | RFB Remote Control | NOT STARTED (Amendment A1 appended; 06A active within window) | — |
 | 07 | Commands / Files / Packages / Power | NOT STARTED (Amendment A1 appended) | — |
@@ -158,4 +158,19 @@ DOCUMENTATION: aligned to DATA_MODEL.md §2/§3/§8; TaskRecord ruling recorded 
 EXIT CRITERIA: launch → open DB → migrate → Device/Task/AuditEvent persistence → shell — MET with automated tests
 RESULT: PASS
 NEXT PLAN: 04
+```
+
+```text
+PLAN: 04-DEVICE-DISCOVERY-REGISTRY
+COMMIT RANGE: 240c752..b886528 (plan 04 series)
+BUILD: PASS (0 warnings)
+TESTS: 114/114 PASS (10 new: CIDR parse/invalid/IPv6, scan find+dedupe, cancellation, reconciliation ×3, smart groups ×2)
+SECURITY: ADR-0007 — single-admin local SQLite default; shared-file multi-admin rejected as production architecture; discovery audit events recorded
+REVIEW: CIDRRange bounded (≤65536 addresses, host-bits-zero validation); scanner injectable prober + cancellation verified; reconciler confidence order MAC > UUID > SSH key > hostname > subnet; smart group DEFINITIONS persisted (predicate = source of truth, membership derived)
+DEFECTS: 4 found+fixed during TDD (UInt128 macOS-15 availability; NSLock async unsafety; IPv6 :: expansion + RFC5952 compression; smart-group created_at round-trip)
+EXTERNAL GATES: none for this plan
+DOCUMENTATION: Plan 04 A1 satisfied — probe set explicit (5900/22/3283/agent), device states implemented, smart groups unconditional with persisted definitions
+EXIT CRITERIA: discover, manually add, persist, remove, group devices — MET (CLI discover live-verified against local RFB service; hosts add/list/remove pre-existing + verified)
+RESULT: PASS
+NEXT PLAN: 05
 ```
