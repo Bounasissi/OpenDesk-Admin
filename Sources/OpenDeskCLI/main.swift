@@ -22,17 +22,23 @@ func blockingAwait<T>(_ operation: @escaping @Sendable () async throws -> T) -> 
     catch { fatalError("blockingAwait: \(error)") }
 }
 
+/// Sendable handoff box for the blocking bridge (older toolchains reject
+/// mutation of captured vars in concurrently-executing closures).
+final class BlockingResultBox<T>: @unchecked Sendable {
+    var result: Result<T, Error>?
+}
+
 /// Blocking bridge that lets the caller handle the thrown error.
 func blockingAwaitThrowing<T>(_ operation: @escaping @Sendable () async throws -> T) throws -> T {
     let semaphore = DispatchSemaphore(value: 0)
-    var result: Result<T, Error>?
+    let box = BlockingResultBox<T>()
     Task.detached {
-        do { result = .success(try await operation()) }
-        catch { result = .failure(error) }
+        do { box.result = .success(try await operation()) }
+        catch { box.result = .failure(error) }
         semaphore.signal()
     }
     semaphore.wait()
-    switch result {
+    switch box.result {
     case .success(let value): return value
     case .failure(let error): throw error
     case nil: throw ConfigurationError.missingValue("blockingAwait result")
