@@ -1,4 +1,5 @@
 import SwiftUI
+import OpenDeskCore
 
 @main
 struct OpenDeskGUIApp: App {
@@ -8,6 +9,12 @@ struct OpenDeskGUIApp: App {
         #if os(macOS)
         NSApplication.shared.setActivationPolicy(.regular)
         #endif
+        // Plan 03 §7.6: launch → open DB → migrate → audit event.
+        // A blocked database degrades the app rather than preventing launch;
+        // the audit event records either outcome.
+        if let db = try? AppBootstrap.openDatabase() {
+            AppBootstrap.recordLaunch(db: db)
+        }
     }
 
     var body: some Scene {
