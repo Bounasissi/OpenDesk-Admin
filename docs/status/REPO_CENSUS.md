@@ -13,7 +13,7 @@
 | Dependencies | **None** (zero SwiftPM packages; system `libsqlite3` via SQLite3 module) |
 | Tests | 92 XCTest cases across 12 files (Tests/OpenDeskCoreTests) — all passing, 0 failed |
 | Build warnings | **0** after Plan 01 cleanup (was 38 incl. duplicates: Optional `.none` ambiguity ×4, never-mutated `var` ×2, unused bindings ×2, unreachable `return`, MainActor call from Thread, redundant `_ =`, NSImage Sendable ×2 resolved by .v14) |
-| CI | `.github/workflows/ci.yml` — build + lint (warnings-as-errors) + test + secret-scan + license-check on push to `main` and PRs, runner `macos-14` |
+| CI | `.github/workflows/ci.yml` — build + lint (warnings-as-errors) + test + secret-scan + license-check; **green on `canonical-091326`** (run 34780948563) |
 | Licenses | MIT (`LICENSE`, ADR-0006); GPL scaffold sources excluded (REPOSITORY_LINEAGE.md §2) |
 | Clean-room artifacts | `docs/clean-room/`, `reverse-engineering/behavior-specs/` (7 YAMLs), `scripts/analyze-ard-bundle.sh`, `scripts/capture-experiment.sh` |
 | Programs/governance | `AGENTS.md`, `docs/program/00A..23`, `docs/status/` ledger, ADRs 0001–0006 |
