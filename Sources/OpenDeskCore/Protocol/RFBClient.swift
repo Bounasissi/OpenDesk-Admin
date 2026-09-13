@@ -232,13 +232,22 @@ public final class RFBClient {
         try connection.write(message)
     }
 
-    /// Send SetEncodings (§7.5.2) — raw only for MVP; Tight/Hextile later.
-    public func setEncodings() throws {
+    /// Send SetEncodings (§7.5.2) — raw + hextile for MVP bandwidth profile.
+    public func setEncodings(raw: Bool = true, hextile: Bool = true) throws {
         var message = Data([0x02])
         message.append(0) // padding
-        message.append(contentsOf: [0, 1]) // number of encodings
-        // Raw encoding = 0
-        message.append(contentsOf: [0, 0, 0, 0])
+        var encodings: [Int32] = []
+        if hextile { encodings.append(5) } // hextile (preferred, listed first)
+        if raw { encodings.append(0) }     // raw fallback
+        message.append(0) // padding
+        message.append(contentsOf: [0, UInt8(encodings.count)])
+        for encoding in encodings {
+            let value = UInt32(bitPattern: encoding)
+            message.append(contentsOf: [
+                UInt8(value >> 24 & 0xFF), UInt8(value >> 16 & 0xFF),
+                UInt8(value >> 8 & 0xFF), UInt8(value & 0xFF),
+            ])
+        }
         try connection.write(message)
     }
 
@@ -292,8 +301,8 @@ public final class RFBClient {
         try connection.write(message)
     }
 
-    /// Read one server message header and, for FramebufferUpdate, decode it.
-    /// Blocks until a full update message is available on the connection.
+    /// Read one server message and, for FramebufferUpdate, decode it.
+    /// Supports Raw (0) and Hextile (5) encodings.
     public func readFramebufferUpdate(format: PixelFormat = .standard32) throws -> [FramebufferRect] {
         let header = try connection.readExactly(4)
         guard header[0] == 0x00 else {
@@ -302,32 +311,50 @@ public final class RFBClient {
         let rectCount = Int(header[2]) << 8 | Int(header[3])
         guard rectCount > 0 else { return [] }
 
-        // Each rect: 12 bytes header + raw pixel data. Read incrementally.
-        var buffer = Data(header)
         var rects: [FramebufferRect] = []
         var pendingRects = rectCount
         while pendingRects > 0 {
-            // Read rectangle header
             let rectHeader = try connection.readExactly(12)
+            let x = UInt16(rectHeader[0]) << 8 | UInt16(rectHeader[1])
+            let y = UInt16(rectHeader[2]) << 8 | UInt16(rectHeader[3])
             let w = UInt16(rectHeader[4]) << 8 | UInt16(rectHeader[5])
             let h = UInt16(rectHeader[6]) << 8 | UInt16(rectHeader[7])
             let encoding = Int32(truncatingIfNeeded:
                 UInt32(rectHeader[8]) << 24 | UInt32(rectHeader[9]) << 16
                 | UInt32(rectHeader[10]) << 8 | UInt32(rectHeader[11]))
-            guard encoding == 0 else { throw RFBError.handshakeFailed("unsupported encoding \(encoding)") }
-            let bytesPerPixel = Int(format.bitsPerPixel) / 8
-            let pixelData = try connection.readExactly(Int(w) * Int(h) * bytesPerPixel)
 
-            var fullRect = Data(rectHeader)
-            fullRect.append(pixelData)
-            // Parse via the shared decoder: build a synthetic single-rect update.
-            var synthetic = Data([0x00, 0x00, 0x00, 0x01])
-            synthetic.append(fullRect)
-            let decoded = try FramebufferUpdateDecoder.decodeUpdate(from: synthetic, format: format)
-            rects.append(contentsOf: decoded.rects)
+            let pixels: [Pixel]
+            switch encoding {
+            case 0: // Raw
+                let bytesPerPixel = Int(format.bitsPerPixel) / 8
+                let pixelData = try connection.readExactly(Int(w) * Int(h) * bytesPerPixel)
+                pixels = try decodeRawPixels(pixelData, width: Int(w), height: Int(h), format: format)
+            case 5: // Hextile — incremental parse straight off the socket
+                pixels = try HextileDecoder.decode(
+                    width: Int(w), height: Int(h), format: format,
+                    read: { count in try connection.readExactly(count) }
+                )
+            default:
+                throw RFBError.handshakeFailed("unsupported encoding \(encoding)")
+            }
+            rects.append(FramebufferRect(x: x, y: y, width: w, height: h, pixels: pixels))
             pendingRects -= 1
         }
-        _ = buffer // header already parsed
         return rects
+    }
+
+    private func decodeRawPixels(_ data: Data, width: Int, height: Int, format: PixelFormat) throws -> [Pixel] {
+        let bytes = [UInt8](data)
+        let bytesPerPixel = Int(format.bitsPerPixel) / 8
+        let count = width * height
+        guard bytes.count == count * bytesPerPixel else {
+            throw RFBError.handshakeFailed("raw update truncated")
+        }
+        var pixels = [Pixel]()
+        pixels.reserveCapacity(count)
+        for i in 0..<count {
+            pixels.append(FramebufferUpdateDecoder.decodePixel(bytes, base: i * bytesPerPixel, format: format))
+        }
+        return pixels
     }
 }

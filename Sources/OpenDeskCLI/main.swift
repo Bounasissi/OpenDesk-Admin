@@ -35,6 +35,7 @@ struct OpenDeskCLI {
         case "wake": return handleWake(rest)
         case "inventory": return handleInventory(rest)
         case "observe": return handleObserve(rest)
+        case "tunnel": return handleTunnel(rest)
         case "copy": return handleCopy(rest)
         case "install": return handleInstall(rest)
         default:
@@ -67,6 +68,7 @@ struct OpenDeskCLI {
             opendesk inventory --local [--export-csv <path>]
             opendesk inventory --host <hostname>
             opendesk observe --host <hostname> [--port 5900] [--password <pw>]
+            opendesk tunnel --host <hostname> [--screen-port 5900]   (keeps running; Ctrl-C stops)
             opendesk copy --host <hostname> --local <path> --remote <path>
             opendesk install --host <hostname> --pkg <path>
 
@@ -396,6 +398,36 @@ struct OpenDeskCLI {
             return 0
         } catch {
             fputs("observe failed: \(error)\n", stderr)
+            return 1
+        }
+    }
+
+    // MARK: - tunnel
+
+    static func handleTunnel(_ args: [String]) -> Int32 {
+        guard let hostname = optionValue("--host", in: args) else {
+            fputs("tunnel: missing --host\n", stderr)
+            return 1
+        }
+        let registry = HostRegistry()
+        guard let host = registry.loadAll().first(where: { $0.hostname == hostname }) else {
+            fputs("tunnel: host \(hostname) not registered\n", stderr)
+            return 1
+        }
+        let screenPort = UInt16(optionValue("--screen-port", in: args) ?? "") ?? 5900
+        do {
+            let tunnel = try TunnelManager().open(host: host, remoteScreenPort: screenPort)
+            defer { TunnelManager().close(tunnel) }
+            print("Tunnel up: connect VNC to 127.0.0.1:\(tunnel.localPort) (Ctrl-C to stop)")
+            signal(SIGINT) { _ in exit(0) }
+            // Keep the forward alive until interrupted.
+            while tunnel.process.isRunning {
+                Thread.sleep(forTimeInterval: 0.2)
+            }
+            print("Tunnel closed.")
+            return 0
+        } catch {
+            fputs("tunnel failed: \(error)\n", stderr)
             return 1
         }
     }

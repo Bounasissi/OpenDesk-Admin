@@ -33,7 +33,9 @@ final class MockRFBConnection: RFBConnection {
             } else {
                 let needed = count - data.count
                 data.append(next.prefix(needed))
-                toSend[0] = next.dropFirst(needed)
+                // removeFirst already emptied the array if this was the last
+                // chunk — insert the remainder rather than overwriting [0].
+                toSend.insert(next.dropFirst(needed), at: 0)
             }
         }
         return data
