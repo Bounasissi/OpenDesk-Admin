@@ -176,6 +176,10 @@ final class LoopbackEndToEndTests: XCTestCase {
         let keyDown = try server.receive(8)
         let keyUp = try server.receive(8)
         let pointer = try server.receive(6)
+        // CutText wire format (§25 gap #11): type 0x06, padding(3),
+        // length(4, big-endian), then the text.
+        let cutHeader = try server.receive(8)
+        let cutText = try server.receive(5)
         sendGroup.wait()
 
         XCTAssertNil(handshakeError)
@@ -188,6 +192,11 @@ final class LoopbackEndToEndTests: XCTestCase {
         XCTAssertEqual(pointer[1], 1)
         XCTAssertEqual(Array(pointer[2...3]), [0, 100])
         XCTAssertEqual(Array(pointer[4...5]), [0, 50])
+        XCTAssertEqual(cutHeader.first, 0x06, "ServerCutText message type")
+        XCTAssertEqual(Array(cutHeader[1...3]), [0, 0, 0], "padding")
+        let cutLength = (UInt32(cutHeader[4]) << 24) | (UInt32(cutHeader[5]) << 16) | (UInt32(cutHeader[6]) << 8) | UInt32(cutHeader[7])
+        XCTAssertEqual(cutLength, 5)
+        XCTAssertEqual(cutText, Data("hello".utf8))
         _ = server.recordedInputBytes()
     }
 }

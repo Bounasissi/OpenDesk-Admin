@@ -63,7 +63,7 @@ final class FramebufferDecoderTests: XCTestCase {
     }
 
     func testFramebufferApplyAndComposite() throws {
-        let framebuffer = Framebuffer(width: 4, height: 4)
+        let framebuffer = try Framebuffer(width: 4, height: 4)
         let (rects, _) = try FramebufferUpdateDecoder.decodeUpdate(from: redRectUpdate(width: 2, height: 2, atX: 2, atY: 2))
         framebuffer.apply(rects[0])
         XCTAssertEqual(framebuffer.pixel(x: 0, y: 0), Pixel(red: 0, green: 0, blue: 0))

@@ -42,7 +42,7 @@ final class KeysymMapTests: XCTestCase {
 
 final class FramebufferRendererTests: XCTestCase {
     func testRenderDimensionsAndPixelPlacement() throws {
-        let framebuffer = Framebuffer(width: 4, height: 2)
+        let framebuffer = try Framebuffer(width: 4, height: 2)
         let red = OpenDeskCore.Pixel(red: 255, green: 0, blue: 0)
         let blue = OpenDeskCore.Pixel(red: 0, green: 0, blue: 255)
         // Fill row 0 red, row 1 blue
@@ -71,14 +71,15 @@ final class FramebufferRendererTests: XCTestCase {
     }
 
     func testInvalidDimensionsThrow() {
-        let empty = Framebuffer(width: 0, height: 0)
-        XCTAssertThrowsError(try FramebufferRenderer.cgImage(from: empty)) { error in
+        XCTAssertThrowsError(try Framebuffer(width: 0, height: 0))
+        // Renderer still guards against zero dimensions independently.
+        XCTAssertThrowsError(try FramebufferRenderer.cgImage(from: Framebuffer(uncheckedWidth: 0, height: 0))) { error in
             XCTAssertEqual(error as? FramebufferRenderer.RenderError, .invalidDimensions)
         }
     }
 
     func testNSImageConvenience() throws {
-        let framebuffer = Framebuffer(width: 2, height: 2, fill: OpenDeskCore.Pixel(red: 1, green: 2, blue: 3))
+        let framebuffer = try Framebuffer(width: 2, height: 2, fill: OpenDeskCore.Pixel(red: 1, green: 2, blue: 3))
         let nsImage = try FramebufferRenderer.nsImage(from: framebuffer)
         XCTAssertEqual(nsImage.size.width, 2)
         XCTAssertEqual(nsImage.size.height, 2)

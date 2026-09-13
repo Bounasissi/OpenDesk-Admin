@@ -99,6 +99,11 @@ public struct RFBVersion: Equatable, Sendable {
             throw RFBError.invalidProtocolVersion(String(data: data, encoding: .ascii) ?? "unreadable")
         }
         let bytes = [UInt8](data)
+        // Malformed-banner defense (Addendum §9): enforce the full RFC 6143 §7.1
+        // layout — separators at 7 and 11, digits elsewhere.
+        guard bytes[7] == UInt8(ascii: "."), bytes[11] == UInt8(ascii: "\n") else {
+            throw RFBError.invalidProtocolVersion(String(data: data, encoding: .ascii) ?? "unreadable")
+        }
 
         func digit(_ byte: UInt8) throws -> Int {
             guard byte >= 48, byte <= 57 else {

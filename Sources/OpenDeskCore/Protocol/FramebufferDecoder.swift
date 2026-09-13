@@ -36,10 +36,21 @@ public final class Framebuffer {
     public let height: Int
     private(set) var pixels: [Pixel]
 
-    public init(width: Int, height: Int, fill: Pixel = Pixel(red: 0, green: 0, blue: 0)) {
-        self.width = width
+    /// Oversized-framebuffer defense (Addendum §9): reject allocations that
+    /// could exhaust memory from a malicious/errant server before they happen.
+    public static let maximumDimension = 16_384
+
+    public convenience init(width: Int, height: Int, fill: Pixel = Pixel(red: 0, green: 0, blue: 0)) throws {
+        guard width > 0, height > 0, width <= Framebuffer.maximumDimension, height <= Framebuffer.maximumDimension else {
+            throw ProtocolError.violation("framebuffer dimensions out of bounds: \(width)x\(height)")
+        }
+        self.init(uncheckedWidth: width, height: height, fill: fill)
+    }
+
+    init(uncheckedWidth: Int, height: Int, fill: Pixel = Pixel(red: 0, green: 0, blue: 0)) {
+        self.width = uncheckedWidth
         self.height = height
-        self.pixels = [Pixel](repeating: fill, count: width * height)
+        self.pixels = [Pixel](repeating: fill, count: uncheckedWidth * height)
     }
 
     /// Apply a decoded rectangle in place.

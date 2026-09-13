@@ -87,7 +87,7 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
             }
             stateLock.lock()
             client = rfb
-            framebuffer = Framebuffer(width: Int(dims.width), height: Int(dims.height))
+            framebuffer = try Framebuffer(width: Int(dims.width), height: Int(dims.height))
             stateLock.unlock()
 
             // First update is a full request; subsequent are incremental.
