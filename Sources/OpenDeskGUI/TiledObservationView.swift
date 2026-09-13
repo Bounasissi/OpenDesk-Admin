@@ -5,6 +5,7 @@ import OpenDeskCore
 /// Each tile owns an independent ScreenStreamer instance.
 struct TiledObservationView: View {
     @StateObject private var tileModel = TileViewModel()
+    /// Grid sizes per Plan 10 §4: exactly 2/4/8/16 (validated by gridPlan).
     @State private var columns = 2
 
     var body: some View {
@@ -12,8 +13,12 @@ struct TiledObservationView: View {
             HStack {
                 Text("Tiled Observation")
                     .font(.headline)
-                Stepper("Columns: \(columns)", value: $columns, in: 1...4)
-                    .frame(width: 160)
+                Menu("Columns: \(columns)") {
+                    ForEach([2, 4, 8, 16], id: \.self) { size in
+                        Button("\(size)") { columns = size }
+                    }
+                }
+                .frame(width: 160)
                 Spacer()
                 Text("\(tileModel.tiles.count) streaming")
                     .font(.caption)
@@ -43,6 +48,10 @@ struct TiledObservationView: View {
     }
 }
 
+extension Notification.Name {
+    static let opendeskCloseTile = Notification.Name("opendeskCloseTile")
+}
+
 // MARK: - Tile
 
 struct ObservationTile: View {
@@ -59,7 +68,8 @@ struct ObservationTile: View {
                     .lineLimit(1)
                 Spacer()
                 Button {
-                    tile.streamer.stopStreaming()
+                    // Route through the coordinator (central ownership).
+                    NotificationCenter.default.post(name: .opendeskCloseTile, object: tile.id)
                 } label: {
                     Image(systemName: "xmark.circle")
                 }
@@ -78,7 +88,6 @@ struct ObservationTile: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .onAppear { tile.start() }
-        .onDisappear { tile.streamer.stopStreaming() }
     }
 }
 
@@ -143,10 +152,14 @@ final class ObservationTileModel: ObservableObject, Identifiable {
     let id = UUID()
     let host: OpenDeskCore.Host
     let streamer: ScreenStreamer
+    /// Central session identity (Plan 10 §2) — the coordinator owns this
+    /// session; the tile renders it.
+    let sessionID: SessionID
 
-    init(host: OpenDeskCore.Host, password: String? = nil) {
+    init(host: OpenDeskCore.Host, password: String? = nil, streamer: ScreenStreamer? = nil, sessionID: SessionID = SessionID()) {
         self.host = host
-        self.streamer = ScreenStreamer(host: host, password: password)
+        self.streamer = streamer ?? ScreenStreamer(host: host, password: password)
+        self.sessionID = sessionID
     }
 
     func start() {
@@ -160,6 +173,9 @@ final class ObservationTileModel: ObservableObject, Identifiable {
 
 @MainActor
 final class TileViewModel: ObservableObject {
+    /// Central ownership (Plan 10 §2): sessions are opened/closed via the
+    /// coordinator, not by tiles or views.
+    let coordinator = ObserveSessionCoordinator()
     @Published var tiles: [ObservationTileModel] = []
     @Published var availableHosts: [OpenDeskCore.Host] = []
 
@@ -169,10 +185,17 @@ final class TileViewModel: ObservableObject {
 
     func addTile(for host: OpenDeskCore.Host) {
         guard !tiles.contains(where: { $0.host.id == host.id }) else { return }
-        tiles.append(ObservationTileModel(host: host))
+        guard let tile = try? coordinator.open(host: host, password: nil) else { return }
+        tiles.append(tile)
+    }
+
+    func removeTile(_ tile: ObservationTileModel) {
+        coordinator.close(tile)
+        tiles.removeAll { $0.id == tile.id }
     }
 
     func stopAll() {
-        tiles.forEach { $0.stop() }
+        tiles.forEach(coordinator.close)
+        tiles.removeAll()
     }
 }

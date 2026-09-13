@@ -24,6 +24,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
 
     let host: OpenDeskCore.Host
     let password: String?
+    /// Quality tier pacing (Plan 10 §3): throttles frame-request cadence
+    /// without reconnecting (tier change preserves the connection).
+    /// nonisolated(unsafe): written on the main actor via applyQualityTier,
+    /// read by the update thread; the tier value is a simple enum write.
+    private nonisolated(unsafe) var qualityTier: QualityTier = .focused
 
     init(host: OpenDeskCore.Host, password: String? = nil) {
         self.host = host
@@ -101,6 +106,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
 
             var firstUpdate = true
             while !isStopped() && !Thread.current.isCancelled {
+                // Tier pacing: sleep between requests per tier cap (no reconnect).
+                let interval = qualityTier.frameRequestIntervalMs
+                if interval != .max, interval > 0 {
+                    Thread.sleep(forTimeInterval: Double(interval) / 1000.0)
+                }
                 let rects = try rfb.readFramebufferUpdate(format: .standard32)
                 stateLock.lock()
                 let fb = framebuffer
@@ -131,6 +141,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
                 self?.status = "Streaming stopped: \(error)"
             }
         }
+    }
+
+    /// Apply a quality tier without reconnect (Plan 10 §5).
+    func applyQualityTier(_ tier: QualityTier) {
+        qualityTier = tier
     }
 
     private nonisolated func isStopped() -> Bool {

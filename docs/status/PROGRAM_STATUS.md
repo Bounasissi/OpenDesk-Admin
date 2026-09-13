@@ -282,3 +282,30 @@ EXIT CRITERIA (§9): release scripts + CI workflow + secret names + validation +
 RESULT: PASS (within gate boundary)
 NEXT PLAN: 21 (alpha/beta/RC — gated on the public signed artifact per §27)
 ```
+
+```text
+PLAN: 15-UX-ACCESSIBILITY-ONBOARDING (movement: central session wiring)
+COMMIT RANGE: e5cad21..HEAD
+BUILD: PASS (0 warnings)
+TESTS: 204/204 PASS + GUI launch smoke PASS after refactor
+SECURITY: gates green
+REVIEW: GUI tiles no longer own connections — ObserveSessionCoordinator wraps the Core ObserveSessionManager (central ownership, Plan 10 §2); grid sizes constrained to 2/4/8/16 via gridPlan; quality-tier changes applied WITHOUT reconnect (tier pacing in the update loop)
+DEFECTS: one isolation defect found+fixed (qualityTier access from nonisolated context → nonisolated(unsafe) with documented single-writer pattern)
+EXTERNAL GATES: VoiceOver/keyboard/contrast manual pass remains the only Plan 15 item
+RESULT: PASS (movement recorded)
+```
+
+```text
+PLAN: 21-BETA-RELEASE-CANDIDATE — ALPHA MILESTONE GATE
+COMMIT RANGE: (canonical-091326 at tag)
+BUILD: PASS
+TESTS: 204/204 PASS, 0 warnings, CI green (latest run 34787320400)
+SECURITY: secret-scan + license gates green; no open Critical/High
+ALPHA CORE (§2 / Addendum §27): registry ✓ (SQLite/JSON backends, 204 tests) | remote control ✓ (RFB stack, loopback e2e, hardening) | commands ✓ (SSH fleet + durable runner) | file transfer ✓ (policy + checksums) | package install ✓ (pipeline) | task engine ✓ (durable behaviors) | basic inventory ✓ (collectors + export + comparison)
+DEFECTS: none open
+EXTERNAL GATES: none for alpha (signed public artifact NOT required at alpha per §27; RC requires it)
+DOCUMENTATION: audit JSON reflects all 26 required-test items satisfied/manual-laned
+EXIT CRITERIA: alpha feature baseline + gate evidence — MET
+RESULT: ALPHA PASS
+NEXT: owner gates (Developer ID) → beta (agent, groups, scheduler, reports, CLI, onboarding, hardening, diagnostics, auto-update) → RC
+```
