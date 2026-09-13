@@ -1,0 +1,13 @@
+{
+  "product": "OpenDesk",
+  "release": null,
+  "currentPlan": "01-REPOSITORY-BASELINE",
+  "status": "not-started",
+  "completedPlans": [],
+  "externalGates": [],
+  "blockingDefects": [],
+  "programStatus": "EXECUTING",
+  "productionStatus": "NOT-LIVE",
+  "lastUpdated": "2026-09-13",
+  "notes": "Instruction hierarchy authored at first commit. Execution entry point: docs/program/00-MASTER-ORCHESTRATOR.md."
+}
