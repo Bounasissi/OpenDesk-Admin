@@ -3,9 +3,9 @@
   "release": null,
   "canonicalBranch": "canonical-091326",
   "prePlansExecuted": ["00A-REPOSITORY-LINEAGE-RECONCILIATION", "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"],
-  "currentPlan": "03-ARCHITECTURE-FOUNDATION",
+  "currentPlan": "04-DEVICE-DISCOVERY-REGISTRY",
   "status": "executing",
-  "completedPlans": ["01-REPOSITORY-BASELINE"],
+  "completedPlans": ["01-REPOSITORY-BASELINE", "03-ARCHITECTURE-FOUNDATION"],
   "externalGates": [
     {
       "gate": "Owner confirmation of MIT license ruling + scaffold-source relicensing decision",

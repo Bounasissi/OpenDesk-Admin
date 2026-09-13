@@ -18,7 +18,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 00 | Master Orchestrator | PERMANENT (controller) | — |
 | 01 | Repository Baseline | **PLAN COMPLETE** | Census docs/status/REPO_CENSUS.md; make verify PASS (build + lint 0 warnings + 92/92 tests + secret-scan + license-check) 2026-09-13; ADR-0004 enforced (.v14), ADR-0006 MIT; **CI green on canonical-091326** (run 34780948563) |
 | 02 | Clean-Room Decomposition | EXECUTED-LAWFUL-BOUNDARY (Amendment A1) | bundle observations ARD-BUNDLE-001..003 committed; 18-experiment corpus + ARD_FEATURE_PARITY.md; live experiments GATED on ARD admin install |
-| 03 | Architecture Foundation | NOT STARTED | — |
+| 03 | Architecture Foundation | **PLAN COMPLETE** | commit a0b5939; 104/104 tests (12 new migration/domain tests); CI green run 34781650028; Domain types + 8 typed errors + SQLiteMigrator 001 (16 core tables) + repositories + Keychain seam + AppBootstrap wiring |
 | 04 | Device Discovery / Registry | NOT STARTED (Amendment A1 appended) | — |
 | 05 | Credentials / Security Foundation | NOT STARTED (Amendment A1 appended) | — |
 | 06 | RFB Remote Control | NOT STARTED (Amendment A1 appended; 06A active within window) | — |
@@ -143,4 +143,19 @@ DOCUMENTATION: CLIENT-BUNDLE-FACTS.md, ARD_BEHAVIOR_MATRIX.md (18 rows), PROTOCO
 EXIT CRITERIA: lawful static analysis executed + all A1 outputs exist; live experiments gated explicitly
 RESULT: PASS (within gate boundary)
 NEXT PLAN: 03
+```
+
+```text
+PLAN: 03-ARCHITECTURE-FOUNDATION
+COMMIT RANGE: a0b5939 (plan 03 commit series on canonical-091326)
+BUILD: PASS (0 warnings; lint gate green)
+TESTS: 104/104 PASS (92 prior + 12 new: 4 migration + 8 domain persistence/error tests)
+SECURITY: secrets never in schema (credential_reference only); Keychain seam interface established; secret/license gates green
+REVIEW: dependency direction via Domain/Persistence/Security layers; TaskRecord naming ruling (Swift Task collision); migration runner forward-only + tested (empty→latest, idempotent, version-mismatch, per-statement execution); terminal-state immutability + idempotency uniqueness enforced at SQL level
+DEFECTS: 3 defects found and fixed during TDD (PRAGMA step result handling; re-entrant queue deadlock in transaction; internal-only AppBootstrap visibility)
+EXTERNAL GATES: none for this plan
+DOCUMENTATION: aligned to DATA_MODEL.md §2/§3/§8; TaskRecord ruling recorded in commit
+EXIT CRITERIA: launch → open DB → migrate → Device/Task/AuditEvent persistence → shell — MET with automated tests
+RESULT: PASS
+NEXT PLAN: 04
 ```
