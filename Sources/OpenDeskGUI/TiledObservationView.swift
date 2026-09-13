@@ -39,6 +39,11 @@ struct TiledObservationView: View {
             }
         }
         .onAppear { tileModel.reloadHosts() }
+        .onReceive(NotificationCenter.default.publisher(for: .opendeskCloseTile)) { notification in
+            guard let tileID = notification.object as? UUID,
+                  let tile = tileModel.tiles.first(where: { $0.id == tileID }) else { return }
+            tileModel.removeTile(tile)
+        }
         .safeAreaInset(edge: .bottom) {
             TileHostPicker(hosts: tileModel.availableHosts, activeHostnames: Set(tileModel.tiles.map(\.host.hostname))) { host in
                 tileModel.addTile(for: host)
