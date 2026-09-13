@@ -9,6 +9,7 @@ public struct Host: Codable, Hashable, Identifiable, Sendable {
     public var authMethod: AuthMethod
     public var groups: [String]
     public var screenPort: Int
+    public var macAddress: String?
     public var lastSeen: Date?
 
     public enum AuthMethod: String, Codable, Sendable {
@@ -24,6 +25,7 @@ public struct Host: Codable, Hashable, Identifiable, Sendable {
         authMethod: AuthMethod = .key,
         groups: [String] = [],
         screenPort: Int = 5900,
+        macAddress: String? = nil,
         lastSeen: Date? = nil
     ) {
         self.id = id
@@ -33,6 +35,7 @@ public struct Host: Codable, Hashable, Identifiable, Sendable {
         self.authMethod = authMethod
         self.groups = groups
         self.screenPort = screenPort
+        self.macAddress = macAddress
         self.lastSeen = lastSeen
     }
 }

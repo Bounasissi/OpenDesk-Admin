@@ -255,4 +255,79 @@ public final class RFBClient {
         message.append(contentsOf: [UInt8(h >> 8), UInt8(h & 0xFF)])
         try connection.write(message)
     }
+
+    /// Send a KeyEvent (§7.5.4): type(1) + down-flag(1) + padding(2) + keysym(4).
+    /// Keysyms follow the X11 keysym convention (0x20-0x7E are ASCII).
+    public func sendKeyEvent(keysym: UInt32, down: Bool) throws {
+        var message = Data([0x04])
+        message.append(down ? 1 : 0)
+        message.append(contentsOf: [0, 0]) // padding
+        message.append(contentsOf: [
+            UInt8(keysym >> 24 & 0xFF), UInt8(keysym >> 16 & 0xFF),
+            UInt8(keysym >> 8 & 0xFF), UInt8(keysym & 0xFF),
+        ])
+        try connection.write(message)
+    }
+
+    /// Send a PointerEvent (§7.5.5): type(1) + button-mask(1) + x(2) + y(2).
+    public func sendPointerEvent(x: UInt16, y: UInt16, buttonMask: UInt8) throws {
+        var message = Data([0x05])
+        message.append(buttonMask)
+        message.append(contentsOf: [UInt8(x >> 8), UInt8(x & 0xFF)])
+        message.append(contentsOf: [UInt8(y >> 8), UInt8(y & 0xFF)])
+        try connection.write(message)
+    }
+
+    /// Send a client cut-text message (§7.5.6).
+    public func sendCutText(_ text: String) throws {
+        var message = Data([0x06])
+        message.append(contentsOf: [0, 0, 0]) // padding
+        let bytes = [UInt8](text.utf8)
+        let length = UInt32(bytes.count)
+        message.append(contentsOf: [
+            UInt8(length >> 24 & 0xFF), UInt8(length >> 16 & 0xFF),
+            UInt8(length >> 8 & 0xFF), UInt8(length & 0xFF),
+        ])
+        message.append(contentsOf: bytes)
+        try connection.write(message)
+    }
+
+    /// Read one server message header and, for FramebufferUpdate, decode it.
+    /// Blocks until a full update message is available on the connection.
+    public func readFramebufferUpdate(format: PixelFormat = .standard32) throws -> [FramebufferRect] {
+        let header = try connection.readExactly(4)
+        guard header[0] == 0x00 else {
+            throw RFBError.handshakeFailed("unexpected server message type \(header[0])")
+        }
+        let rectCount = Int(header[2]) << 8 | Int(header[3])
+        guard rectCount > 0 else { return [] }
+
+        // Each rect: 12 bytes header + raw pixel data. Read incrementally.
+        var buffer = Data(header)
+        var rects: [FramebufferRect] = []
+        var pendingRects = rectCount
+        while pendingRects > 0 {
+            // Read rectangle header
+            let rectHeader = try connection.readExactly(12)
+            let w = UInt16(rectHeader[4]) << 8 | UInt16(rectHeader[5])
+            let h = UInt16(rectHeader[6]) << 8 | UInt16(rectHeader[7])
+            let encoding = Int32(truncatingIfNeeded:
+                UInt32(rectHeader[8]) << 24 | UInt32(rectHeader[9]) << 16
+                | UInt32(rectHeader[10]) << 8 | UInt32(rectHeader[11]))
+            guard encoding == 0 else { throw RFBError.handshakeFailed("unsupported encoding \(encoding)") }
+            let bytesPerPixel = Int(format.bitsPerPixel) / 8
+            let pixelData = try connection.readExactly(Int(w) * Int(h) * bytesPerPixel)
+
+            var fullRect = Data(rectHeader)
+            fullRect.append(pixelData)
+            // Parse via the shared decoder: build a synthetic single-rect update.
+            var synthetic = Data([0x00, 0x00, 0x00, 0x01])
+            synthetic.append(fullRect)
+            let decoded = try FramebufferUpdateDecoder.decodeUpdate(from: synthetic, format: format)
+            rects.append(contentsOf: decoded.rects)
+            pendingRects -= 1
+        }
+        _ = buffer // header already parsed
+        return rects
+    }
 }

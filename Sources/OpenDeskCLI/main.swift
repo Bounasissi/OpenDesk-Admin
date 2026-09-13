@@ -30,6 +30,8 @@ struct OpenDeskCLI {
             return 0
         case "hosts": return handleHosts(rest)
         case "task": return handleTask(rest)
+        case "tasks": return handleSavedTasks(rest)
+        case "wake": return handleWake(rest)
         case "inventory": return handleInventory(rest)
         case "observe": return handleObserve(rest)
         case "copy": return handleCopy(rest)
@@ -52,7 +54,11 @@ struct OpenDeskCLI {
             opendesk task run --host <hostname> --command "<shell command>"
             opendesk task run --groups <g1,g2> --command "<shell command>"
             opendesk task sleep --host <hostname>
-            opendesk inventory --local
+            opendesk tasks add <name> --command "<cmd>" [--timeout 30] [--groups g1]
+            opendesk tasks list
+            opendesk tasks remove <name>
+            opendesk wake --host <hostname>          (requires --mac registered on host)
+            opendesk inventory --local [--export-csv <path>]
             opendesk inventory --host <hostname>
             opendesk observe --host <hostname> [--port 5900] [--password <pw>]
             opendesk copy --host <hostname> --local <path> --remote <path>
@@ -150,6 +156,80 @@ struct OpenDeskCLI {
         return results.allSatisfy { $0.succeeded } ? 0 : 2
     }
 
+    // MARK: - saved tasks
+
+    static func handleSavedTasks(_ args: [String]) -> Int32 {
+        guard let sub = args.first else {
+            fputs("tasks: missing subcommand (add|list|remove)\n", stderr)
+            return 1
+        }
+        let store = TaskStore()
+        switch sub {
+        case "add":
+            guard let name = args.dropFirst().first,
+                  let command = optionValue("--command", in: args) else {
+                fputs("tasks add: usage: opendesk tasks add <name> --command \"<cmd>\" [--timeout 30] [--groups g1,g2]\n", stderr)
+                return 1
+            }
+            let timeout = Int(optionValue("--timeout", in: args) ?? "") ?? 30
+            let groups = (optionValue("--groups", in: args) ?? "").split(separator: ",").map(String.init)
+            guard store.add(name: name, command: command, timeoutSeconds: timeout, targetGroups: groups) != nil else {
+                fputs("tasks add: task named \(name) already exists\n", stderr)
+                return 1
+            }
+            print("Saved task \(name) (v1)")
+            return 0
+        case "list":
+            let tasks = store.loadAll()
+            if tasks.isEmpty {
+                print("No saved tasks. Add one: opendesk tasks add <name> --command \"<cmd>\"")
+                return 0
+            }
+            for task in tasks {
+                print("\(task.name)  v\(task.version)  timeout=\(task.timeoutSeconds)s  groups=\(task.targetGroups.joined(separator: ","))")
+                print("  cmd: \(task.command)")
+            }
+            return 0
+        case "remove":
+            guard let name = args.dropFirst().first else {
+                fputs("tasks remove: missing <name>\n", stderr)
+                return 1
+            }
+            guard let task = store.task(named: name) else {
+                fputs("tasks remove: no task named \(name)\n", stderr)
+                return 1
+            }
+            store.remove(id: task.id)
+            print("Removed task \(name)")
+            return 0
+        default:
+            fputs("tasks: unknown subcommand \(sub)\n", stderr)
+            return 1
+        }
+    }
+
+    // MARK: - wake
+
+    static func handleWake(_ args: [String]) -> Int32 {
+        guard let hostname = optionValue("--host", in: args) else {
+            fputs("wake: missing --host\n", stderr)
+            return 1
+        }
+        let registry = HostRegistry()
+        guard let host = registry.loadAll().first(where: { $0.hostname == hostname }) else {
+            fputs("wake: host \(hostname) not registered\n", stderr)
+            return 1
+        }
+        do {
+            try WakeOnLAN.wake(host: host)
+            print("Wake-on-LAN magic packet sent to \(host.macAddress ?? "") (\(hostname))")
+            return 0
+        } catch {
+            fputs("wake failed: \(error)\n", stderr)
+            return 1
+        }
+    }
+
     // MARK: - inventory
 
     static func handleInventory(_ args: [String]) -> Int32 {
@@ -158,6 +238,11 @@ struct OpenDeskCLI {
             do {
                 let report = try collector.collectLocal()
                 printReport(report)
+                if let exportPath = optionValue("--export-csv", in: args) {
+                    let csv = ReportExporter.reportsCSV([report]) + "\n" + ReportExporter.appsCSV([report])
+                    try csv.write(toFile: exportPath, atomically: true, encoding: .utf8)
+                    print("Exported report to \(exportPath)")
+                }
                 return 0
             } catch {
                 fputs("inventory failed: \(error)\n", stderr)

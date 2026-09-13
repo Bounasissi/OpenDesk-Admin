@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(name: "OpenDeskCore", targets: ["OpenDeskCore"]),
         .executable(name: "opendesk", targets: ["OpenDeskCLI"]),
+        .executable(name: "opendesk-gui", targets: ["OpenDeskGUI"]),
     ],
     targets: [
         .target(name: "OpenDeskCore", path: "Sources/OpenDeskCore"),
@@ -14,6 +15,11 @@ let package = Package(
             name: "OpenDeskCLI",
             dependencies: ["OpenDeskCore"],
             path: "Sources/OpenDeskCLI"
+        ),
+        .executableTarget(
+            name: "OpenDeskGUI",
+            dependencies: ["OpenDeskCore"],
+            path: "Sources/OpenDeskGUI"
         ),
         .testTarget(
             name: "OpenDeskCoreTests",

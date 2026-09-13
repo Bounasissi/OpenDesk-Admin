@@ -1,5 +1,15 @@
 import Foundation
 
+/// Abstraction over a command-execution transport so the task engine can be
+/// unit-tested with mock transports and is not hard-wired to SSH.
+public protocol CommandTransport {
+    func run(command: String, timeoutSeconds: Int?) throws -> (stdout: String, stderr: String, exitCode: Int32)
+    func ping() -> Bool
+}
+
+/// SSHTransport already satisfies CommandTransport via its existing API.
+extension SSHTransport: CommandTransport {}
+
 /// Executes commands and file transfers on a client host over SSH.
 /// Uses the system `ssh`/`scp` binaries — no client agent required.
 public struct SSHTransport: Sendable {

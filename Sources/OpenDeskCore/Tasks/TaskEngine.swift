@@ -69,11 +69,17 @@ public enum PowerTask {
 
 /// Runs task definitions across the host roster and aggregates results.
 public final class TaskEngine: @unchecked Sendable {
-    public init() {}
+    public typealias TransportFactory = (Host) -> CommandTransport
+
+    private let transportFactory: TransportFactory
+
+    public init(transportFactory: TransportFactory? = nil) {
+        self.transportFactory = transportFactory ?? { SSHTransport(host: $0) }
+    }
 
     /// Run a command on one host.
     public func runOnHost(_ command: String, host: Host, taskId: UUID = UUID(), timeoutSeconds: Int = 30) -> TaskResult {
-        let transport = SSHTransport(host: host)
+        let transport = transportFactory(host)
         let start = Date()
         do {
             let output = try transport.run(command: command, timeoutSeconds: timeoutSeconds)
@@ -107,12 +113,32 @@ public final class TaskEngine: @unchecked Sendable {
         }
     }
 
-    /// Run a command across many hosts (bounded by maxConcurrency when dispatching).
+    /// Run a command across many hosts with bounded parallelism.
+    /// Results are returned in the same order as the input hosts.
     public func runAcrossHosts(_ command: String, hosts: [Host], taskId: UUID = UUID(), timeoutSeconds: Int = 30, maxConcurrency: Int = 8) -> [TaskResult] {
-        let results = hosts.map { host in
-            runOnHost(command, host: host, taskId: taskId, timeoutSeconds: timeoutSeconds)
+        guard !hosts.isEmpty else { return [] }
+        let boundedConcurrency = Swift.max(1, maxConcurrency)
+        var results = [TaskResult?](repeating: nil, count: hosts.count)
+        let group = DispatchGroup()
+        let semaphore = DispatchSemaphore(value: boundedConcurrency)
+        let lock = NSLock()
+
+        for (index, host) in hosts.enumerated() {
+            group.enter()
+            semaphore.wait()
+            DispatchQueue.global().async {
+                defer {
+                    semaphore.signal()
+                    group.leave()
+                }
+                let result = self.runOnHost(command, host: host, taskId: taskId, timeoutSeconds: timeoutSeconds)
+                lock.lock()
+                results[index] = result
+                lock.unlock()
+            }
         }
-        return results
+        group.wait()
+        return results.compactMap { $0 }
     }
 
     private func describe(_ error: SSHTransport.TransportError) -> String {

@@ -1,7 +1,7 @@
 # Roadmap
 
-## Phase 1 — Core Engine (this repo, current)
-- [x] RFB protocol client core (handshake, security negotiation, framebuffer request/decode skeleton)
+## Phase 1 — Core Engine ✅
+- [x] RFB protocol client core (handshake, security negotiation, VNC DES auth)
 - [x] SSH transport + host registry
 - [x] Task engine (UNIX commands, power tasks) with per-host result capture
 - [x] Inventory collector (hardware + software reports)
@@ -9,19 +9,23 @@
 - [x] `opendesk` CLI with subcommands
 - [x] Unit + integration tests
 
-## Phase 2 — Fleet Ops Hardening
-- [ ] Wake-on-LAN power tasks
-- [ ] Saved task definitions with versioning + JSON schema
-- [ ] Result aggregation reports (export CSV/JSON)
-- [ ] Discovery: Bonjour `_rfb._tcp` / `_ssh._tcp` browser to auto-populate roster
-- [ ] Concurrent task execution across fleet (bounded parallelism)
+## Phase 2 — Fleet Ops Hardening ✅
+- [x] Wake-on-LAN power tasks (`opendesk wake`, RFC 102-byte magic packet, UDP broadcast)
+- [x] Saved task definitions with versioning (TaskStore: update bumps version, duplicate names rejected)
+- [x] Result/inventory export (CSV + JSON, RFC 4180 quoting)
+- [x] Discovery: Bonjour `_rfb._tcp` browser (FleetDiscovery)
+- [x] Concurrent task execution across fleet (bounded parallelism, order-preserving)
+- [x] Raw framebuffer update decoding + input event messages (KeyEvent/PointerEvent/CutText)
+- [x] CI workflow (GitHub Actions, macos-14, swift build + test)
 
-## Phase 3 — GUI Dashboard (macOS, SwiftUI)
-- [ ] Roster view with groups
-- [ ] Single + tiled screen observation windows (bind RFB client to NSImageView/Canvas)
-- [ ] Control mode (key/mouse injection via CGEvent)
-- [ ] Task runner UI with live results
-- [ ] Inventory report viewer
+## Phase 3 — GUI Dashboard (SwiftUI) — started ✅ (core views working)
+- [x] Roster view with groups + add-host bar
+- [x] Bonjour discovery section in sidebar
+- [x] Task runner UI with live results
+- [x] Inventory report viewer
+- [x] Screen connect + handshake status view
+- [ ] Tiled screen observation windows (bind decoded framebuffer to renderer)
+- [ ] Control mode input routing (CGEvent mapping to RFB KeyEvent/PointerEvent)
 
 ## Phase 4 — Advanced
 - [ ] Scheduled tasks (launchd integration)
