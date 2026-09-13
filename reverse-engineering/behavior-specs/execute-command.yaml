@@ -1,0 +1,30 @@
+behavior:
+  name: execute_command
+  source: public-documentation + observed-behavior   # clean-room: no Apple code
+  inputs:
+    - targets: device_id[]
+    - command: string            # single command or multi-line script
+    - run_as: user | root
+    - timeout_seconds: int
+  states:
+    - queued
+    - dispatched
+    - running
+    - success
+    - failed
+    - cancelled
+  observable_result:
+    - per-device task status
+    - exit_code
+    - stdout (captured)
+    - stderr (captured)
+    - duration
+  failure_modes:
+    - host offline -> task waits (offline_wait) until reconnect per execution.mode
+    - auth failure -> failed with auth error, no retry
+    - timeout -> failed, partial output preserved
+    - command not found -> failed, exit_code 127
+  assertions:
+    - exit_code captured per target
+    - stdout/stderr stored in task_targets.result_json
+    - audit_events row written per execution

@@ -1,0 +1,27 @@
+behavior:
+  name: power_management
+  source: public-documentation + observed-behavior
+  operations:
+    - wake        # Wake-on-LAN magic packet, then verify reachability
+    - sleep
+    - restart
+    - shutdown
+    - logout_user
+  inputs:
+    - targets: device_id[]
+    - grace_seconds: optional int
+    - message: optional string shown to user
+  states:
+    - queued
+    - dispatched
+    - success
+    - failed
+  observable_result:
+    - per-device task status
+    - post-action reachability probe result
+  failure_modes:
+    - wake on unreachable host -> failed after retry window
+    - restart/shutdown -> connection drops; success judged by post-action probe or absence
+    - active user session -> logout requires confirmation policy
+  assertions:
+    - audit_events row per power action (high-sensitivity action)
