@@ -31,7 +31,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 13 | MDM / Provisioning | **PLAN COMPLETE** (guidance + diagnostics) | commit efd91de; docs/provisioning/MDM_GUIDE.md (5 vendors); `opendesk-agent status` reports §5 diagnostic fields (verified live); TCC bypass never attempted |
 | 14 | High-Performance Streaming | NOT STARTED (parallel-eligible after 11; A1 positioning rule appended) | — |
 | 15 | UX / Accessibility / Onboarding | **PARTIAL** (detection + intents) | commit efd91de; OnboardingDetector (6 checks, unknown≠granted, corrective guidance) — 4 tests; six App Intents compiled into GUI; full GUI a11y verification + VoiceOver pass → manual QA lane (Plan 15 §7) |
-| 16 | Security Hardening | NOT STARTED (16A active before any public distribution) | — |
+| 16 | Security Hardening | **PLAN COMPLETE** (sweep) | commit HEAD; THREAT_MODEL.md (14 threats → controls); DB 0600 enforced + tested; path-traversal validation + tested; command parameterization verified; secret scan + license gates green in CI; privileged-helper audit → 20 (external) |
 | 17 | Compatibility / Reliability / Performance | NOT STARTED (17A lab plan added) | — |
 | 18 | Observability / Diagnostics | **PLAN COMPLETE** (core) | commit dd34c30; ODLog 12 categories w/ correlation IDs; DiagnosticBundle (schema version, task history, redacted audit excerpt) — 3 tests; crash reporting hook → Plan 22 ops |
 | 19 | Open-Source Release Readiness | NOT STARTED | — |
