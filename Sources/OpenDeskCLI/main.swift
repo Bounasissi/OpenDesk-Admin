@@ -9,15 +9,45 @@ extension String {
     }
 }
 
+extension Array where Element == String {
+    subscript(safe index: Int) -> String? {
+        indices.contains(index) ? self[index] : nil
+    }
+}
+
+/// Bridge a Swift-concurrency async throw to the synchronous CLI main.
+@discardableResult
+func blockingAwait<T>(_ operation: @escaping @Sendable () async throws -> T) -> T {
+    do { return try blockingAwaitThrowing(operation) }
+    catch { fatalError("blockingAwait: \(error)") }
+}
+
+/// Blocking bridge that lets the caller handle the thrown error.
+func blockingAwaitThrowing<T>(_ operation: @escaping @Sendable () async throws -> T) throws -> T {
+    let semaphore = DispatchSemaphore(value: 0)
+    var result: Result<T, Error>?
+    Task.detached {
+        do { result = .success(try await operation()) }
+        catch { result = .failure(error) }
+        semaphore.signal()
+    }
+    semaphore.wait()
+    switch result {
+    case .success(let value): return value
+    case .failure(let error): throw error
+    case nil: throw ConfigurationError.missingValue("blockingAwait result")
+    }
+}
+
 @main
 struct OpenDeskCLI {
     static func main() {
         let args = Array(CommandLine.arguments.dropFirst())
-        let exitCode = run(args: args)
+        let exitCode = (try? run(args: args)) ?? 1
         exit(exitCode)
     }
 
-    static func run(args: [String]) -> Int32 {
+    static func run(args: [String]) throws -> Int32 {
         guard let command = args.first else {
             printUsage()
             return 1
@@ -38,6 +68,8 @@ struct OpenDeskCLI {
         case "tunnel": return handleTunnel(rest)
         case "copy": return handleCopy(rest)
         case "install": return handleInstall(rest)
+        case "discover": return try handleDiscover(rest)
+        case "devices": return handleDevices(rest)
         default:
             fputs("Unknown command: \(command)\n", stderr)
             printUsage()
@@ -71,10 +103,153 @@ struct OpenDeskCLI {
             opendesk tunnel --host <hostname> [--screen-port 5900]   (keeps running; Ctrl-C stops)
             opendesk copy --host <hostname> --local <path> --remote <path>
             opendesk install --host <hostname> --pkg <path>
+            opendesk discover --cidr 192.168.1.0/24 [--ports 5900,22,3283] [--limit 16]
+            opendesk devices [--json]
 
         Screen observation requires the client's Screen Sharing (VNC) service.
         Tasks/inventory/distribution require SSH access with admin credentials.
         """)
+    }
+
+    // MARK: - discover / devices (Plan 04)
+
+    static func handleDiscover(_ args: [String]) throws -> Int32 {
+        var cidr: String?
+        var ports: [UInt16] = [5900, 22, 3283]
+        var limit = 16
+        var json = false
+        var i = 0
+        while i < args.count {
+            switch args[i] {
+            case "--cidr": i += 1; cidr = args.indices.contains(i) ? args[i] : nil
+            case "--ports":
+                i += 1
+                if let spec = args[safe: i] {
+                    ports = spec.split(separator: ",").compactMap { UInt16($0) }
+                }
+            case "--limit":
+                i += 1
+                if let v = args[safe: i].flatMap(Int.init) { limit = max(1, v) }
+            case "--json": json = true
+            default: break
+            }
+            i += 1
+        }
+        guard let cidr else {
+            fputs("discover: --cidr is required\n", stderr)
+            return 2
+        }
+        let range: CIDRRange
+        do { range = try CIDRRange.parse(cidr) } catch {
+            fputs("discover: invalid CIDR \(cidr)\n", stderr)
+            return 2
+        }
+        // Bound the probe set by --limit (rate control; Plan 04 §2.3).
+        let addresses = Array(range.addresses.prefix(min(limit, CIDRRange.maxAddresses)))
+        let bounded = CIDRRange(addresses: addresses, isIPv6: range.isIPv6)
+        let scanner = CIDRScanner(concurrencyLimit: limit, probeTimeoutMs: 1000)
+        let db: SQLiteDatabase
+        do { db = try AppBootstrap.openDatabase() } catch {
+            fputs("discover: database unavailable: \(error)\n", stderr)
+            return 3
+        }
+        defer { recordDiscoverAudit(db: db, cidr: cidr) }
+        let probePorts = ports
+        let results: [CIDRScanner.HostScanResult] = try blockingAwaitThrowing {
+            try await scanner.scan(bounded, ports: probePorts)
+        }
+        let repo = SQLiteDeviceRepository(db: db)
+        let reconciler = DeviceReconciler(repository: repo)
+        var output: [[String: String]] = []
+        for result in results where !result.openPorts.isEmpty {
+            var endpoints: [Endpoint] = []
+            for port in result.openPorts {
+                let transport: EndpointTransport
+                switch port {
+                case 5900: transport = .rfb
+                case 22: transport = .ssh
+                case 3283: transport = .ardReporting
+                default: transport = .agent
+                }
+                endpoints.append(Endpoint(host: result.host, port: Int(port), transport: transport))
+            }
+            try? reconciler.reconcile(ScanObservation(hostname: result.host, endpoints: endpoints, stableSignals: []))
+            output.append([
+                "host": result.host,
+                "open_ports": result.openPorts.map(String.init).joined(separator: ","),
+            ])
+        }
+        if json {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            if let data = try? encoder.encode(output), let string = String(data: data, encoding: .utf8) {
+                print(string)
+            }
+            return 0
+        }
+        guard !results.isEmpty else {
+            print("No devices discovered in \(cidr).")
+            return 0
+        }
+        print("Discovered \(output.count) device(s) in \(cidr):")
+        for entry in output {
+            print("  \(entry["host"] ?? "?") — ports: \(entry["open_ports"] ?? "")")
+        }
+        return 0
+    }
+
+    private static func recordDiscoverAudit(db: SQLiteDatabase, cidr: String) {
+        try? SQLiteAuditRepository(db: db).record(AuditEvent(
+            actor: "cli",
+            action: "discovery.scan",
+            targets: [cidr],
+            result: .success
+        ))
+    }
+
+    static func handleDevices(_ args: [String]) -> Int32 {
+        let json = args.contains("--json")
+        guard let db = try? AppBootstrap.openDatabase() else {
+            fputs("devices: database unavailable\n", stderr)
+            return 3
+        }
+        let repo = SQLiteDeviceRepository(db: db)
+        guard let devices = try? repo.all() else {
+            fputs("devices: registry read failed\n", stderr)
+            return 3
+        }
+        if json {
+            struct DeviceJSON: Encodable {
+                let id: String
+                let hostname: String
+                let lifecycle: String
+                let endpoints: [String]
+            }
+            let payload = devices.map { d in
+                DeviceJSON(
+                    id: d.id.rawValue,
+                    hostname: d.hostname,
+                    lifecycle: d.lifecycle.rawValue,
+                    endpoints: d.endpoints.map { "\($0.transport.rawValue):\($0.host):\($0.port)" }
+                )
+            }
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            if let data = try? encoder.encode(payload), let string = String(data: data, encoding: .utf8) {
+                print(string)
+            }
+            return 0
+        }
+        guard !devices.isEmpty else {
+            print("Registry is empty.")
+            return 0
+        }
+        print("\(devices.count) device(s):")
+        for device in devices {
+            let endpoints = device.endpoints.map { "\($0.transport.rawValue) \($0.host):\($0.port)" }.joined(separator: "; ")
+            print("  \(device.hostname) [\(device.lifecycle.rawValue)] \(endpoints.isEmpty ? "(no endpoints)" : endpoints)")
+        }
+        return 0
     }
 
     // MARK: - hosts

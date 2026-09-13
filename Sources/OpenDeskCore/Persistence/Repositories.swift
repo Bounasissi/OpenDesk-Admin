@@ -214,19 +214,19 @@ public final class SQLiteSmartGroupRepository: SmartGroupRepository, @unchecked 
     public func upsert(_ group: SmartGroup) throws {
         let data = try JSONEncoder().encode(group.predicate)
         try db.execute("""
-        INSERT INTO smart_groups (id, name, predicate) VALUES (?, ?, ?)
+        INSERT INTO smart_groups (id, name, predicate, created_at) VALUES (?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET name = excluded.name, predicate = excluded.predicate
-        """, bindings: [group.id.rawValue, group.name, String(data: data, encoding: .utf8)])
+        """, bindings: [group.id.rawValue, group.name, String(data: data, encoding: .utf8), iso(group.createdAt)])
     }
 
     public func load(_ id: GroupID) throws -> SmartGroup? {
-        let rows = try db.query("SELECT id, name, predicate FROM smart_groups WHERE id = ?", bindings: [id.rawValue])
+        let rows = try db.query("SELECT id, name, predicate, created_at FROM smart_groups WHERE id = ?", bindings: [id.rawValue])
         guard let row = rows.first,
               let name = row.opt("name"),
               let predicateJSON = row.opt("predicate"),
               let data = predicateJSON.data(using: .utf8),
               let predicate = try? JSONDecoder().decode(SmartGroupPredicate.self, from: data) else { return nil }
-        return SmartGroup(id: id, name: name, predicate: predicate)
+        return SmartGroup(id: id, name: name, predicate: predicate, createdAt: row.date("created_at") ?? Date())
     }
 
     public func all() throws -> [SmartGroup] {
@@ -236,12 +236,18 @@ public final class SQLiteSmartGroupRepository: SmartGroupRepository, @unchecked 
 
 // MARK: - Helpers
 
+let isoFormatter: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter
+}()
+
 func iso(_ date: Date) -> String {
-    ISO8601DateFormatter().string(from: date)
+    isoFormatter.string(from: date)
 }
 
 func isoDate(_ string: String) -> Date {
-    ISO8601DateFormatter().date(from: string) ?? Date(timeIntervalSince1970: 0)
+    isoFormatter.date(from: string) ?? Date(timeIntervalSince1970: 0)
 }
 
 func signalsJSON(_ signals: [StableSignal]) -> String {

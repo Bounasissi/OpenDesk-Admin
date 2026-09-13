@@ -87,6 +87,13 @@ public enum StableSignal: Hashable, Codable, Sendable {
 
 /// The domain device. Transport-specific objects (Host, RFBClient, …) must not
 /// leak into UI state; UI renders this model (Plan 03 §2/§5).
+public enum CapabilityKind: String, Codable, Sendable, CaseIterable {
+    case rfb
+    case ssh
+    case ardReporting
+    case agent
+}
+
 public struct Device: Hashable, Codable, Sendable, Identifiable {
     public var id: DeviceID
     public var hostname: String
@@ -96,6 +103,10 @@ public struct Device: Hashable, Codable, Sendable, Identifiable {
     public var notes: String?
     public var createdAt: Date
     public var updatedAt: Date
+    public var osVersion: String?
+    public var architecture: String?
+    public var capabilities: [CapabilityKind: Bool]
+    public var agentState: String?
 
     public init(
         id: DeviceID = DeviceID(),
@@ -105,7 +116,11 @@ public struct Device: Hashable, Codable, Sendable, Identifiable {
         endpoints: [Endpoint] = [],
         notes: String? = nil,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        osVersion: String? = nil,
+        architecture: String? = nil,
+        capabilities: [CapabilityKind: Bool] = [:],
+        agentState: String? = nil
     ) {
         self.id = id
         self.hostname = hostname
@@ -115,6 +130,10 @@ public struct Device: Hashable, Codable, Sendable, Identifiable {
         self.notes = notes
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.osVersion = osVersion
+        self.architecture = architecture
+        self.capabilities = capabilities
+        self.agentState = agentState
     }
 }
 
@@ -211,6 +230,54 @@ public struct SmartGroupPredicate: Hashable, Codable, Sendable {
     public init(op: BooleanOperator, clauses: [SmartGroupClause]) {
         self.op = op
         self.clauses = clauses
+    }
+
+    /// Predicate evaluation over device fields (Plan 04 A1.3). Fields:
+    /// hostname, lifecycle, online, os_version, architecture, agent_state,
+    /// capability.<name>.
+    public func matches(_ device: Device) -> Bool {
+        let results = clauses.map { clause -> Bool in
+            let actual: String?
+            switch clause.field {
+            case "hostname": actual = device.hostname
+            case "lifecycle": actual = device.lifecycle.rawValue
+            case "online": actual = device.lifecycle == .online ? "true" : "false"
+            case "os_version": actual = device.osVersion
+            case "architecture": actual = device.architecture
+            case "agent_state": actual = device.agentState
+            default:
+                if clause.field.hasPrefix("capability.") {
+                    let kind = String(clause.field.dropFirst("capability.".count))
+                    actual = device.capabilities[CapabilityKind(rawValue: kind) ?? .rfb].map { $0 ? "true" : "false" } ?? "false"
+                } else {
+                    actual = nil
+                }
+            }
+            guard let actual else { return false }
+            switch clause.op {
+            case .eq: return actual == clause.value
+            case .neq: return actual != clause.value
+            case .contains: return actual.localizedCaseInsensitiveContains(clause.value)
+            case .lt: return Self.numericLess(actual, clause.value)
+            case .gt: return Self.numericLess(clause.value, actual)
+            }
+        }
+        switch op {
+        case .and: return results.allSatisfy { $0 }
+        case .or: return results.contains(true)
+        }
+    }
+
+    /// Compare dotted version numbers (e.g. "15.5" < "26").
+    static func numericLess(_ a: String, _ b: String) -> Bool {
+        let aParts = a.split(separator: ".").map { Int($0) ?? 0 }
+        let bParts = b.split(separator: ".").map { Int($0) ?? 0 }
+        for i in 0..<max(aParts.count, bParts.count) {
+            let x = i < aParts.count ? aParts[i] : 0
+            let y = i < bParts.count ? bParts[i] : 0
+            if x != y { return x < y }
+        }
+        return false
     }
 }
 

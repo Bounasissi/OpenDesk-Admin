@@ -3,7 +3,6 @@ import Foundation
 /// Plan 03 §7.6 wiring: launch → open DB → migrate → record audit event.
 /// Shared by the GUI and CLI bootstraps so both operate on the same
 /// migrated canonical database.
-@MainActor
 public enum AppBootstrap {
     /// Canonical database location: ~/Library/Application Support/OpenDeskAdmin/opendesk.db
     public static func defaultDatabasePath() -> String {
