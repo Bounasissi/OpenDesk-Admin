@@ -24,7 +24,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 06 | RFB Remote Control | **PLAN COMPLETE** (hardening) | commit d85bfca; 138/138 tests; CI green run 34783171992; §25 gaps 1/2/8/11 closed (003.889, NIST DES KAT ×2 verified vs OpenSSL, partial-reads suite, CutText bytes); malformed-banner layout enforced; oversized-FB defense; RFBRetryPolicy; 100-cycle soak memory-bounded; real-Apple-host interop remains gated (17A) |
 | 07 | Commands / Files / Packages / Power | **PLAN COMPLETE** (transport contract) | commit adb995e; 144/144 tests; CI green (run 34783410910); SHA-256 verification + conflict policy + rsync mapping + package pipeline command sequence + tunnel policy/diagnostics; live-network paths (real push/pull/install) remain gated on 17A lab |
 | 08 | Task Engine / Scheduler | **PLAN COMPLETE** (durable core) | commit 2d59e4e; 151/151 tests; CI green run 34783913753; DurableTaskRunner: offline waits + reconnect executes + restart survival + per-target independence + idempotency + persisted cancellation; schedules in canonical DB w/ legacy JSON import |
-| 09 | Inventory / Reporting | NOT STARTED (Amendment A1 appended) | — |
+| 09 | Inventory / Reporting | **PLAN COMPLETE** (comparison core) | commit HEAD; 157/157 tests; JSON export test (§25 #18), SnapshotDiff drift (apps/OS/storage/agent/management), device-vs-device comparison, group aggregates; remaining collector breadth (login history, file search, security) → remote-collector verification gated on 17A |
 | 10 | Multi-Observe / Session Management | NOT STARTED (Amendment A1 appended) | — |
 | 11 | OpenDesk Endpoint Agent | NOT STARTED (Amendment A1 appended) | — |
 | 12 | CLI / API / Shortcuts | NOT STARTED | — |

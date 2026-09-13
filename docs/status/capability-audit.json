@@ -147,14 +147,12 @@
     ],
     "gaps": [
       16,
-      18,
       19,
       25,
       26
     ],
     "gapDetail": {
       "16": "Add duplicate task rejection test",
-      "18": "Add dedicated JSON export test",
       "19": "Add headless Bonjour browse unit test",
       "25": "Add GUI launch smoke (XCTest)",
       "26": "Add GUI discovery concurrency test"
