@@ -25,7 +25,7 @@ final class DurableTaskTests: XCTestCase {
 
     func testOfflineTargetWaitsForReconnect() throws {
         let db = try tempDB()
-        let device = try onlineDevice(db, hostname: "sleepy", online: false)
+        _ = try onlineDevice(db, hostname: "sleepy", online: false)
         let transport = FakeTransport()
         let runner = DurableTaskRunner(db: db, transport: transport)
         let task = try runner.submit(type: "exec.command", deviceIDs: [device.id], parameters: #"{"command": "uptime"}"#)
