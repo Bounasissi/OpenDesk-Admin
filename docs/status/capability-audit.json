@@ -81,14 +81,12 @@
       "security.keychain_store",
       "security.rbac_13_privileges",
       "security.audit_trail",
-      "agent.endpoint_agent",
       "provisioning.mdm",
       "release.developer_id_notarization",
       "release.update_feed_sparkle",
       "release.alpha_beta_rc_milestones",
       "release.v1_public_launch",
-      "cli.json_output_everywhere",
-      "automation.app_intents"
+      "cli.json_output_everywhere"
     ],
     "SUPERSEDED": [
       "rfb.scaffold_ard30_client",
@@ -141,17 +139,15 @@
       1,
       2,
       8,
-      11
+      11,
+      19
     ],
     "gaps": [
-      16,
-      19,
       25,
       26
     ],
     "gapDetail": {
       "16": "Add duplicate task rejection test",
-      "19": "Add headless Bonjour browse unit test",
       "25": "Add GUI launch smoke (XCTest)",
       "26": "Add GUI discovery concurrency test"
     }

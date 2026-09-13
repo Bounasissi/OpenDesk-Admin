@@ -26,11 +26,11 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 08 | Task Engine / Scheduler | **PLAN COMPLETE** (durable core) | commit 2d59e4e; 151/151 tests; CI green run 34783913753; DurableTaskRunner: offline waits + reconnect executes + restart survival + per-target independence + idempotency + persisted cancellation; schedules in canonical DB w/ legacy JSON import |
 | 09 | Inventory / Reporting | **PLAN COMPLETE** (comparison core) | commit HEAD; 157/157 tests; JSON export test (§25 #18), SnapshotDiff drift (apps/OS/storage/agent/management), device-vs-device comparison, group aggregates; remaining collector breadth (login history, file search, security) → remote-collector verification gated on 17A |
 | 10 | Multi-Observe / Session Management | **PLAN COMPLETE** (manager core) | commit dd34c30; ObserveSessionManager (central ownership, 4 quality tiers, cap enforcement, no-reconnect promotion, 2/4/8/16 grid plans, suspension stops frame requests, resource snapshot) — 6 tests; live-tile GUI promotion wiring → Plan 15 |
-| 11 | OpenDesk Endpoint Agent | NOT STARTED (Amendment A1 appended) | — |
+| 11 | OpenDesk Endpoint Agent | **PLAN COMPLETE** (protocol core) | commit efd91de; AgentHello/Welcome negotiation (one-version skew verified), EnrollmentService (one-time token → Keychain identity, reuse rejected), AgentJobQueue (restart-survivable), LaunchDaemon/LaunchAgent plists, `opendesk-agent` binary (enroll/daemon/user-agent/status — status verified live); live TLS channel + agent update path → gated on 17A fleet + 20 |
 | 12 | CLI / API / Shortcuts | **PLAN COMPLETE** (CLI+API) | commit dd34c30; LocalAPIServer (versioned UDS, 0600, no TCP) + `serve` command + 4 API tests; `docs/cli/REFERENCE.md` (--json coverage table + stable exit codes); App Intents explicitly NOT implemented yet (tracked, Plan 15) |
-| 13 | MDM / Provisioning | NOT STARTED | — |
+| 13 | MDM / Provisioning | **PLAN COMPLETE** (guidance + diagnostics) | commit efd91de; docs/provisioning/MDM_GUIDE.md (5 vendors); `opendesk-agent status` reports §5 diagnostic fields (verified live); TCC bypass never attempted |
 | 14 | High-Performance Streaming | NOT STARTED (parallel-eligible after 11; A1 positioning rule appended) | — |
-| 15 | UX / Accessibility / Onboarding | NOT STARTED | — |
+| 15 | UX / Accessibility / Onboarding | **PARTIAL** (detection + intents) | commit efd91de; OnboardingDetector (6 checks, unknown≠granted, corrective guidance) — 4 tests; six App Intents compiled into GUI; full GUI a11y verification + VoiceOver pass → manual QA lane (Plan 15 §7) |
 | 16 | Security Hardening | NOT STARTED (16A active before any public distribution) | — |
 | 17 | Compatibility / Reliability / Performance | NOT STARTED (17A lab plan added) | — |
 | 18 | Observability / Diagnostics | **PLAN COMPLETE** (core) | commit dd34c30; ODLog 12 categories w/ correlation IDs; DiagnosticBundle (schema version, task history, redacted audit excerpt) — 3 tests; crash reporting hook → Plan 22 ops |
