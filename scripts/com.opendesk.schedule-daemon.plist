@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Boot-persistent scheduler daemon: runs `opendesk schedule daemon`
+         under launchd so saved schedules survive logout/restart.
+
+         Install:
+           1. Build: swift build -c release
+           2. Copy binary:  sudo cp .build/release/opendesk /usr/local/bin/
+           3. Copy plist:   cp scripts/com.opendesk.schedule-daemon.plist ~/Library/LaunchAgents/
+           4. Load:         launchctl load ~/Library/LaunchAgents/com.opendesk.schedule-daemon.plist
+
+         Logs: ~/.opendesk/scheduler.log
+    -->
+    <key>Label</key>
+    <string>org.opendesk.schedule-daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/opendesk</string>
+        <string>schedule</string>
+        <string>daemon</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/REPLACE_ME/.opendesk/scheduler.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/REPLACE_ME/.opendesk/scheduler.log</string>
+</dict>
+</plist>
