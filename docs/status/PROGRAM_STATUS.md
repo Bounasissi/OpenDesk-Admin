@@ -22,7 +22,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 04 | Device Discovery / Registry | **PLAN COMPLETE** | commit 240c752..HEAD; 114/114 tests (10 new discovery/registry tests); ADR-0007 recorded; CIDR scan + reconciliation + smart groups + device states implemented; live CLI discovery verified against local RFB |
 | 05 | Credentials / Security Foundation | **PLAN COMPLETE** | commit 086a024; 124/124 tests; CI green run 34782529095; credential service (5 kinds incl. certificates, Keychain+reference rows, rotation/removal), RBAC 13 privileges w/ audit, host-key TOFU policy (migration 002), redaction filter |
 | 06 | RFB Remote Control | **PLAN COMPLETE** (hardening) | commit d85bfca; 138/138 tests; CI green run 34783171992; §25 gaps 1/2/8/11 closed (003.889, NIST DES KAT ×2 verified vs OpenSSL, partial-reads suite, CutText bytes); malformed-banner layout enforced; oversized-FB defense; RFBRetryPolicy; 100-cycle soak memory-bounded; real-Apple-host interop remains gated (17A) |
-| 07 | Commands / Files / Packages / Power | NOT STARTED (Amendment A1 appended) | — |
+| 07 | Commands / Files / Packages / Power | **PLAN COMPLETE** (transport contract) | commit adb995e; 144/144 tests; CI green (run 34783410910); SHA-256 verification + conflict policy + rsync mapping + package pipeline command sequence + tunnel policy/diagnostics; live-network paths (real push/pull/install) remain gated on 17A lab |
 | 08 | Task Engine / Scheduler | NOT STARTED (Amendment A1 appended) | — |
 | 09 | Inventory / Reporting | NOT STARTED (Amendment A1 appended) | — |
 | 10 | Multi-Observe / Session Management | NOT STARTED (Amendment A1 appended) | — |
@@ -203,4 +203,19 @@ DOCUMENTATION: audit JSON gap map updated (gaps 16/18/19/25/26 remain → plans 
 EXIT CRITERIA: Addendum §9 hardening items with tests — MET (cancellation and multi-display verified at session level in Plan 10; encoding fallback ladder documented)
 RESULT: PASS
 NEXT PLAN: 07
+```
+
+```text
+PLAN: 07-SSH-FILES-PACKAGES-POWER
+COMMIT RANGE: f04c501..adb995e
+BUILD: PASS (0 warnings)
+TESTS: 144/144 PASS (6 new: SHA-256 KAT, checksum verification ×1, conflict policy ×1, package pipeline ×1, tunnel policy/diagnostics ×1, rsync mapping ×1)
+SECURITY: pipeline verifies remote checksum before install; ExitOnForwardFailure on tunnels; identity selection supported
+REVIEW: TransferPolicy/PackageInstallPipeline/TunnelPolicy+Diagnostics implemented; one defect found+fixed (missing -L forward spec in tunnel arguments)
+DEFECTS: none open
+EXTERNAL GATES: real push/pull/install/wake/restart on physical hosts → 17A lab (logged)
+DOCUMENTATION: Plan 07 A1.1/A1.2 satisfied at contract level; full drag/drop GUI path deferred to Plan 15 UX
+EXIT CRITERIA: remote execution + file/package contract + tunnel policy — contract MET with tests; physical verification gated
+RESULT: PASS
+NEXT PLAN: 08
 ```
