@@ -44,6 +44,15 @@ swift run opendesk wake --host mymac.local               # needs --mac on the ho
 swift run opendesk-gui
 ```
 
+## Packaging
+
+```bash
+./scripts/build-app.sh release   # → .build/OpenDesk Admin.app (ad-hoc signed)
+```
+
+For boot-persistent scheduled tasks, install the launchd wrapper:
+`scripts/com.opendesk.schedule-daemon.plist` (see comments inside).
+
 ## Documentation
 
 - `docs/DECOMPOSITION.md` — full feature decomposition of Apple Remote Desktop
