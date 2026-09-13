@@ -67,7 +67,7 @@ public struct SQLiteMigrator {
 /// Migration catalog. Schema changes require a NEW numbered migration —
 /// never edit an applied one (DATA_MODEL §8).
 public enum MigrationCatalog {
-    public static let all: [MigrationStep] = [migration001, migration002]
+    public static let all: [MigrationStep] = [migration001, migration002, migration003]
 
     /// 001 — initial core schema (Plan 03 §4; DATA_MODEL §2; secret-free by rule).
     static let migration001 = MigrationStep(version: 1, sql: """
@@ -228,6 +228,26 @@ public enum MigrationCatalog {
         host          TEXT PRIMARY KEY,
         fingerprint   TEXT NOT NULL,
         recorded_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    );
+    """)
+
+    /// 003 — endpoint agent tables (Plan 11 §5/§3): one-time enrollment tokens
+    /// and the daemon's durable job queue.
+    static let migration003 = MigrationStep(version: 3, sql: """
+    CREATE TABLE IF NOT EXISTS enrollment_tokens (
+        token         TEXT PRIMARY KEY,
+        device_label  TEXT NOT NULL,
+        created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+        redeemed_at   TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS agent_jobs (
+        id          TEXT PRIMARY KEY,
+        type        TEXT NOT NULL,
+        payload     TEXT NOT NULL,
+        state       TEXT NOT NULL DEFAULT 'pending',
+        result      TEXT,
+        created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
     );
     """)
 }

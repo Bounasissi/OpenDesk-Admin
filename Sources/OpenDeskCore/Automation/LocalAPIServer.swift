@@ -155,8 +155,9 @@ public final class LocalAPIServer: @unchecked Sendable {
 }
 
 /// Transport used when actions are dispatched locally without a remote target.
-struct NoopTransport: RemoteTransport {
-    func execute(device: Device, command: String) -> ExecOutcome {
+public struct NoopTransport: RemoteTransport {
+    public init() {}
+    public func execute(device: Device, command: String) -> ExecOutcome {
         ExecOutcome(exitCode: 0, stdout: "", stderr: "")
     }
 }
