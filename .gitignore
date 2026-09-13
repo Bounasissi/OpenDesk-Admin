@@ -3,3 +3,6 @@
 *.o
 .DS_Store
 xcuserdata/
+.tables
+.tables-shm
+.tables-wal
