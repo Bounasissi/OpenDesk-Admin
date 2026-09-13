@@ -16,7 +16,7 @@ final class DurableTaskTests: XCTestCase {
     }
 
     private func onlineDevice(_ db: SQLiteDatabase, hostname: String, online: Bool) throws -> Device {
-        var device = Device(hostname: hostname, lifecycle: online ? .online : .offline)
+        let device = Device(hostname: hostname, lifecycle: online ? .online : .offline)
         try SQLiteDeviceRepository(db: db).upsert(device)
         return device
     }
