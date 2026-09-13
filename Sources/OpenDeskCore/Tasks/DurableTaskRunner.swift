@@ -139,12 +139,17 @@ public final class DurableTaskRunner: @unchecked Sendable {
 
     // MARK: Internals
 
+    /// Test/exposure helper: load a task record (thin wrapper over the repo).
+    public func tasksLoad(_ taskID: TaskID) throws -> TaskRecord? {
+        try tasks.load(taskID)
+    }
+
     func currentState(taskID: TaskID) throws -> TaskState {
         let loaded = try tasks.load(taskID)
         return loaded?.state ?? .created
     }
 
-    func commandFor(task: TaskRecord?, device: Device) -> String {
+    public func commandFor(task: TaskRecord?, device: Device) -> String {
         // v1: exec.command carries {"command": "..."}; the agent path lands in Plan 11.
         if let task, let data = task.parametersJSON?.data(using: .utf8),
            let object = try? JSONDecoder().decode([String: String].self, from: data),

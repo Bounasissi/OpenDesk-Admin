@@ -16,6 +16,8 @@ public final class SQLiteDatabase: @unchecked Sendable {
             throw PersistenceError.connectionFailed(message)
         }
         self.handle = db
+        // Plan 16 §3: the roster/task database is user-private (0600).
+        chmod(path, 0o600)
         try execute("PRAGMA journal_mode = WAL;")
         try execute("PRAGMA foreign_keys = ON;")
         try execute("PRAGMA busy_timeout = 5000;")
