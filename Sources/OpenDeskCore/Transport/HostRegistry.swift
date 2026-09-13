@@ -40,34 +40,28 @@ public struct Host: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
-/// Persistent roster of managed hosts, stored as JSON on disk.
+/// Persistent roster of managed hosts with swappable storage backends.
+/// Default: JSON file. For multi-admin setups pass a shared SQLiteBackend.
 public final class HostRegistry: @unchecked Sendable {
-    private let fileURL: URL
-    private let queue = DispatchQueue(label: "opendesk.hostregistry")
+    private let backend: RegistryBackend
 
-    public init(directory: URL? = nil) {
-        let base = directory ?? FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".opendesk", isDirectory: true)
-        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        self.fileURL = base.appendingPathComponent("hosts.json")
+    public init(directory: URL? = nil, backend: RegistryBackend? = nil) {
+        if let backend {
+            self.backend = backend
+        } else {
+            let base = directory ?? FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".opendesk", isDirectory: true)
+            try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+            self.backend = JSONFileBackend(fileURL: base.appendingPathComponent("hosts.json"))
+        }
     }
 
     public func loadAll() -> [Host] {
-        queue.sync {
-            guard let data = try? Data(contentsOf: fileURL) else { return [] }
-            return (try? JSONDecoder().decode([Host].self, from: data)) ?? []
-        }
+        backend.loadAll()
     }
 
     public func save(_ hosts: [Host]) {
-        queue.sync {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            encoder.dateEncodingStrategy = .iso8601
-            if let data = try? encoder.encode(hosts) {
-                try? data.write(to: fileURL, options: .atomic)
-            }
-        }
+        backend.save(hosts)
     }
 
     public func add(_ host: Host) {

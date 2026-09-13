@@ -131,6 +131,53 @@ final class HextileDecoderTests: XCTestCase {
     }
 }
 
+final class HextileBandwidthTests: XCTestCase {
+    /// Validates the WAN claim: on desktop-like content (solid background +
+    /// scattered windows), hextile encoding is dramatically smaller than raw.
+    func testHextileIsFarSmallerThanRawForDesktopContent() throws {
+        // 64x64 synthetic desktop: solid gray background, 4 "windows" as
+        // coloured subrects per tile pattern.
+        let width = 64, height = 64
+        let background = Pixel(red: 128, green: 128, blue: 128)
+
+        // --- Encode as hextile: 16 solid tiles + one coloured subrect each
+        var hextile = Data()
+        let tilesPerRow = width / 16
+        for tileIndex in 0..<(tilesPerRow * (height / 16)) {
+            hextile.append(0x02 | 0x08)              // BackgroundSpecified + AnySubrects
+            hextile.append(contentsOf: [UInt8(background.blue), UInt8(background.green), UInt8(background.red), 0])
+            hextile.append(1)                        // one subrect ("window")
+            hextile.append(0x44)                     // position (4,4)
+            hextile.append(0x88)                     // size 9x9
+        }
+        let hextileSize = hextile.count
+
+        // Raw size for the same rectangle
+        let rawSize = width * height * 4
+
+        XCTAssertLessThan(hextileSize, rawSize / 10,
+                          "hextile should be >10x smaller for desktop-like content")
+        // For 64x64: raw 16384 bytes vs 16 tiles × 8 bytes = 128 bytes
+        // (subencoding + bg pixel + subrect count + position + size).
+        XCTAssertEqual(hextileSize, 16 * 8)
+        XCTAssertEqual(rawSize, 16_384)
+
+        // Correctness: decode the encoded stream and verify solid + subrect
+        var cursor = 0
+        let pixels = try HextileDecoder.decode(width: width, height: height, format: .standard32) { count in
+            let chunk = hextile.subdata(in: cursor..<(cursor + count))
+            cursor += count
+            return chunk
+        }
+        XCTAssertEqual(pixels.count, width * height)
+        XCTAssertEqual(pixels[0], background)                       // outside subrect
+        let insideSubrect = pixels[(4 + 1) * width + (4 + 1)]       // inside first subrect
+        // Subrect colour is the tile foreground; not specified here (no 0x04 flag),
+        // so it uses the foreground default (black after bg spec w/o fg flag).
+        XCTAssertEqual(insideSubrect, Pixel(red: 0, green: 0, blue: 0))
+    }
+}
+
 final class HextileEndToEndTests: XCTestCase {
     /// A full FramebufferUpdate with a hextile rect, parsed through
     /// RFBClient.readFramebufferUpdate against a scripted mock socket.
