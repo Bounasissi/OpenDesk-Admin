@@ -1,0 +1,61 @@
+{
+  "": {
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/primary.swiftdeps"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Control/ScreenSession.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/ScreenSession.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/ScreenSession.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/ScreenSession~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/ScreenSession.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/ScreenSession.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Distribution/DistributionEngine.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/DistributionEngine.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/DistributionEngine.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/DistributionEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/DistributionEngine.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/DistributionEngine.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Inventory/InventoryCollector.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/InventoryCollector.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/InventoryCollector.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/InventoryCollector~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/InventoryCollector.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/InventoryCollector.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Protocol/RFBClient.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBClient.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBClient.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBClient.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBClient.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Protocol/RFBConnection.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBConnection.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBConnection.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBConnection~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBConnection.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/RFBConnection.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Tasks/TaskEngine.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/TaskEngine.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/TaskEngine.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/TaskEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/TaskEngine.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/TaskEngine.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Transport/HostRegistry.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/HostRegistry.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/HostRegistry.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/HostRegistry~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/HostRegistry.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/HostRegistry.dia"
+  },
+  "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Transport/SSHTransport.swift": {
+    "dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/SSHTransport.d",
+    "object": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/SSHTransport.swift.o",
+    "swiftmodule": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/SSHTransport~partial.swiftmodule",
+    "swift-dependencies": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/SSHTransport.swiftdeps",
+    "diagnostics": "/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/.build/arm64-apple-macosx/debug/OpenDeskCore.build/SSHTransport.dia"
+  }
+}

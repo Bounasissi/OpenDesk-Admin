@@ -1,0 +1,8 @@
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Control/ScreenSession.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Distribution/DistributionEngine.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Inventory/InventoryCollector.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Protocol/RFBClient.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Protocol/RFBConnection.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Tasks/TaskEngine.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Transport/HostRegistry.swift
+/Users/dbounasissi/.local/share/opencode/worktree/573a5ac8394f452e28898ffc81ceee760883df33/initial-091396/Sources/OpenDeskCore/Transport/SSHTransport.swift
