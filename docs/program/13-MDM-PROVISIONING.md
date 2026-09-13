@@ -95,3 +95,9 @@ A managed Mac can be provisioned with an MDM-driven workflow requiring only OS-m
 ## 9. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `15-UX-ACCESSIBILITY-ONBOARDING`; Plan 14 parallel-eligible).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §19)
+
+The conversation-derived `scripts/setup-client.sh` (first-party macOS tooling) is retained as **developer/manual bootstrap only** — it is not the final provisioning story. §2's vendor list (generic Apple MDM, Jamf, Kandji, Mosyle, Intune) and §5's diagnostic fields are the production path. Do not bypass TCC/user consent (§4 stands). §3's automation applies only to what the platform legally permits.

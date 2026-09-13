@@ -131,3 +131,21 @@ No unresolved Critical/High security finding. Any accepted Medium finding requir
 ## 10. Status Update
 
 On completion update `docs/status/PROGRAM_STATUS.md` and `program-state.json` (next: `17-COMPATIBILITY-RELIABILITY-PERFORMANCE`).
+
+---
+
+## Amendment A1 — Three-Conversation Addendum (2026-09-13, Addendum §23)
+
+Required security artifacts (concretize §2–§6 outputs):
+
+```text
+THREAT_MODEL.md (or SECURITY_ARCHITECTURE.md living section — already §2)
+SBOM
+dependency inventory
+license inventory (16A)
+secret scan (§6)
+privileged-helper audit (§4)
+release entitlement audit (Plan 20 §6)
+```
+
+Threat list per Addendum §23 matches §2 — treat §2 as the acceptance checklist. **Release rule: no open Critical/High security issue at release.**
