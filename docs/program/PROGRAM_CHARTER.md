@@ -347,3 +347,71 @@ At that point `docs/status/program-state.json` becomes:
 ```
 
 That is the Definition of Done for the first-commit-to-production OpenDesk program.
+
+---
+
+## 9. Amendment A1 — Corrected Critical Path and COMPLETE Semantics (2026-09-13)
+
+### 9.1 Corrected delivery order (Addendum §29 — supersedes §2 ordering where different)
+
+```text
+00A Repository lineage reconciliation
+ ↓
+00B Claims-to-evidence audit
+ ↓
+01 Repository baseline
+ ↓
+02 + decomposition execution
+ ↓
+03 Architecture reconciliation
+ ↓
+04 Discovery + identity + smart groups
+ ↓
+05 Keychain + RBAC + audit
+ ↓
+06 RFB/ARD protocol reconciliation (06A inside window) + hardening
+ ↓
+07 SSH / files / packages / power completeness
+ ↓
+08 Durable task server + full scheduler
+ ↓
+09 Full inventory / reporting / drift
+ ↓
+10 Multi-observe scaling
+ ↓
+11 Endpoint agent
+ ↓
+12 CLI + JSON + local API + App Intents
+ ↓
+13 MDM / provisioning
+ ↓
+15 Product UX / onboarding / accessibility
+ ↓
+16 Security hardening + 16A licensing reconciliation
+ ↓
+17 Real-Mac compatibility (17A lab) + soak + failure injection
+ ↓
+18 Diagnostics / observability
+ ↓
+19 Open-source readiness
+ ↓
+20 Developer ID / notarization / updater / release automation
+ ↓
+21 Alpha → Beta → RC
+ ↓
+22 v1.0 public launch
+ ↓
+23 production operations
+```
+
+Plan 14 (native high-performance streaming) may execute in parallel after the endpoint agent is sufficiently stable. It must not hide unfinished foundational work. Plans 00A/00B executed 2026-09-13 (see `docs/status/REPOSITORY_LINEAGE.md`, `docs/status/CAPABILITY_AUDIT.md`).
+
+### 9.2 Three-level COMPLETE semantics (Addendum §31)
+
+`COMPLETE` is only meaningful at one of three levels (`AGENTS.md` §11.2):
+
+- **TASK COMPLETE** — one bounded engineering task passes its DoD.
+- **PLAN COMPLETE** — every requirement and exit gate in one numbered plan passes.
+- **PROGRAM COMPLETE** — §8 production-launch condition satisfied.
+
+Program completion is never inferred from: GUI launching, test counts, RFB working, `v0.3.0` tagged, ad-hoc signed app existing, or README claims.

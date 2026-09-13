@@ -1,13 +1,21 @@
 {
   "product": "OpenDesk",
   "release": null,
+  "canonicalBranch": "canonical-091326",
+  "prePlansExecuted": ["00A-REPOSITORY-LINEAGE-RECONCILIATION", "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"],
   "currentPlan": "01-REPOSITORY-BASELINE",
-  "status": "not-started",
+  "status": "executing",
   "completedPlans": [],
-  "externalGates": [],
+  "externalGates": [
+    {
+      "gate": "Owner confirmation of MIT license ruling + scaffold-source relicensing decision",
+      "plan": "16A",
+      "action": "Record owner decision; until then scaffold sources stay excluded from canonical tree"
+    }
+  ],
   "blockingDefects": [],
   "programStatus": "EXECUTING",
   "productionStatus": "NOT-LIVE",
   "lastUpdated": "2026-09-13",
-  "notes": "Instruction hierarchy authored at first commit. Execution entry point: docs/program/00-MASTER-ORCHESTRATOR.md."
+  "notes": "Addendum executed 2026-09-13: lineage reconciled (docs/status/REPOSITORY_LINEAGE.md), claims audited (docs/status/CAPABILITY_AUDIT.md + capability-audit.json). Canonical branch builds and passes 92/92 tests as of audit. Entry point: docs/program/00-MASTER-ORCHESTRATOR.md (Amendment A1)."
 }

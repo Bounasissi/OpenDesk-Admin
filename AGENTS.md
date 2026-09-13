@@ -210,3 +210,28 @@ All phase instruction documents: `docs/program/00-MASTER-ORCHESTRATOR.md` throug
 Program-wide policy (Definition of Done, phase-gate protocol, handoff contract, milestone order, scope discipline, external gates): `docs/program/PROGRAM_CHARTER.md`.
 
 Execution entry point for any new session: `docs/program/00-MASTER-ORCHESTRATOR.md`.
+
+---
+
+## 11. Zero-Oversight Controller Directive (Addendum §30, binding 2026-09-13)
+
+Use this as the updated controller prompt:
+
+> You are responsible for completing OpenDesk to public v1.0, not merely advancing the current feature. First read `AGENTS.md`, the program charter, the current program-state ledger, `docs/program/00A-REPOSITORY-LINEAGE-RECONCILIATION.md`, `docs/program/00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT.md`, and the active plan. The three September 13 development conversations contain useful historical evidence but are not authoritative proof of current completion. Reconcile all branches and reported commits before replacing or recreating work. Any capability claimed complete in those conversations must be independently verified on the canonical branch. Resolve routine technical ambiguities autonomously and document material rulings. Never stop because a subfeature works; complete the active phase's implementation, integration, tests, documentation, review remediation, and exit gate. Continue sequentially until an actual external authorization gate or the production-live Definition of Done is reached.
+
+### 11.1 Reconciliation precedence
+
+Before replacing or recreating any work: consult `docs/status/REPOSITORY_LINEAGE.md`. The canonical branch is `canonical-091326` until promoted. Conversation-derived code on `initial-091396` and `OG-Output-Plan-0913` is historical evidence; only canonical-branch current execution counts.
+
+### 11.2 COMPLETE vocabulary (Addendum §31)
+
+No agent may write `COMPLETE` without specifying which level:
+
+```text
+TASK COMPLETE    = one bounded engineering task passes its DoD
+PLAN COMPLETE    = every requirement and exit gate in one numbered plan passes
+PROGRAM COMPLETE = OpenDesk v1.0 is public, signed, notarized, updateable,
+                   tested from the public artifact, documented, operational
+```
+
+The program is not complete because the GUI launches, 92 tests pass, RFB works, `v0.3.0` is tagged, an ad-hoc signed app exists, or the README says ARD replacement. It is complete only when the production-launch definition (`PROGRAM_CHARTER.md` §8) is satisfied.
