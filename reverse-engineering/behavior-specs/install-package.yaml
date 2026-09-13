@@ -1,0 +1,34 @@
+behavior:
+  name: install_package
+  source: public-documentation + observed-behavior
+  inputs:
+    - targets: device_id[]
+    - package_path: string          # .pkg / .mpkg
+    - restart_policy: none | restart | restart_if_required
+  states:
+    - queued
+    - copying
+    - installing
+    - success
+    - failed
+    - cancelled
+  observable_result:
+    - per-device task status
+    - installer exit code and output
+    - staging artifact deleted after run
+    - optional reboot performed
+  pipeline:
+    - checksum package locally
+    - SFTP stage to remote temp
+    - "sudo installer -pkg PACKAGE -target /"
+    - capture exit/output
+    - delete staging artifact
+    - optional reboot per restart_policy
+  failure_modes:
+    - checksum mismatch -> abort before upload
+    - offline host -> offline_wait per execution.mode
+    - installer failure -> failed, output preserved
+    - restart required -> surfaced in result
+  assertions:
+    - no user interaction required on client
+    - staging artifact absent after terminal state

@@ -1,0 +1,26 @@
+behavior:
+  name: device_discovery
+  source: public-documentation + observed-behavior
+  mechanisms:
+    - bonjour        # mDNS browse for ARD/RFB services
+    - cidr_scan      # TCP probe 22/5900/3283 across range
+    - manual_entry   # hostname or IP
+  inputs:
+    - mechanism: mechanism[] | all
+    - cidr_range: optional
+  states:
+    - scanning
+    - resolving
+    - complete
+  observable_result:
+    - scanner record per host:
+        hostname, bonjour_name, ips, mac_address, rfb_available,
+        ssh_available, latency, os_version, ard_client_version,
+        auth_state, last_seen
+    - new devices inserted into devices table (dedupe by mac/hostname)
+  failure_modes:
+    - duplicate discovery -> merge into existing device record
+    - host flapping -> last_seen updated, online flag follows probe
+  assertions:
+    - discovery never mutates target hosts
+    - scan results persistable and re-runnable

@@ -1,0 +1,31 @@
+behavior:
+  name: copy_files
+  source: public-documentation + observed-behavior
+  inputs:
+    - direction: push | pull
+    - targets: device_id[]
+    - source_path: string
+    - destination_path: string
+    - conflict_policy: overwrite | rename | skip
+    - preserve: [timestamps, permissions, xattrs]
+    - bandwidth_limit: optional
+  states:
+    - queued
+    - copying
+    - success
+    - failed
+    - cancelled
+  observable_result:
+    - per-device task status
+    - bytes_transferred
+    - destination file hash matches source hash
+    - progress events
+  failure_modes:
+    - disk full -> failed, partial artifact cleaned
+    - destination collision -> per conflict_policy
+    - permission denied -> failed with error
+    - interrupted transfer -> resumable via checksum
+    - symlink -> transferred as link, not dereferenced target
+  assertions:
+    - destination_hash_matches: true
+    - staging artifacts removed on completion or failure

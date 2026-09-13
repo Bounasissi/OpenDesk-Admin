@@ -1,0 +1,41 @@
+behavior:
+  name: inventory_collect
+  source: public-documentation + observed-behavior
+  collectors:
+    - hardware        # architecture, model, memory, cpu, displays
+    - storage         # volumes, capacity, free space
+    - network         # interfaces, addresses, gateway
+    - operating_system
+    - installed_applications
+    - processes
+    - users
+    - login_history
+    - file_search     # spotlight/mdfind-backed
+    - application_usage
+    - security_management
+  inputs:
+    - targets: device_id[]
+    - collectors: collector[] | all
+  states:
+    - queued
+    - collecting
+    - success
+    - failed
+  observable_result:
+    - inventory_snapshots row per device per run
+    - normalized rows in hardware/software/network inventory tables
+    - snapshot JSON exportable
+  snapshot_shape:
+    device: mac-17
+    collectedAt: "2026-09-13T18:00:00Z"
+    hardware: { architecture: arm64, memoryBytes: 68719476736 }
+    os: {}
+    network: []
+    storage: []
+    applications: []
+  failure_modes:
+    - partial collector failure -> snapshot saved with per-collector error, task failed=false
+    - offline host -> offline_wait per execution.mode
+  assertions:
+    - snapshots diffable (software comparison report)
+    - no secrets/PII beyond usernames collected

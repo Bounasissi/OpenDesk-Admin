@@ -1,0 +1,41 @@
+behavior:
+  name: remote_control_session
+  source: public-documentation + RFC 6143 + observed-behavior
+  transport: RFB/VNC (TCP 5900), Apple ARD auth = security type 30 via LibVNCClient
+  inputs:
+    - device_id
+    - mode: observe | control
+    - display: primary | all | specific
+    - quality: adaptive | high | low
+  states:
+    - connecting
+    - authenticating
+    - observing
+    - controlling
+    - reconnecting
+    - ended
+  observable_result:
+    - framebuffer rendered
+    - input events applied (control mode only)
+    - clipboard sync (bidirectional)
+    - session row in sessions table
+  features:
+    - display selection
+    - scaling
+    - full screen
+    - observe-only enforcement (no input injection in observe mode)
+    - reconnection with backoff
+    - adaptive quality on latency
+  multi_observe:
+    grid: thumbnail renderer + SwiftUI grid
+    throttling:
+      focused: 30-60 fps
+      visible_thumbnail: 2-5 fps
+      background: 0.2-1 fps
+  failure_modes:
+    - auth rejected -> session ends with auth error
+    - network drop -> reconnecting state, resume framebuffer
+    - host display sleep -> wake policy per user setting
+  assertions:
+    - observe mode never injects input
+    - session start/end recorded in sessions + audit_events
