@@ -32,9 +32,9 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 14 | High-Performance Streaming | NOT STARTED (parallel-eligible after 11; A1 positioning rule appended) | — |
 | 15 | UX / Accessibility / Onboarding | **PARTIAL** (detection + intents) | commit efd91de; OnboardingDetector (6 checks, unknown≠granted, corrective guidance) — 4 tests; six App Intents compiled into GUI; full GUI a11y verification + VoiceOver pass → manual QA lane (Plan 15 §7) |
 | 16 | Security Hardening | **PLAN COMPLETE** (sweep) | commit HEAD; THREAT_MODEL.md (14 threats → controls); DB 0600 enforced + tested; path-traversal validation + tested; command parameterization verified; secret scan + license gates green in CI; privileged-helper audit → 20 (external) |
-| 17 | Compatibility / Reliability / Performance | NOT STARTED (17A lab plan added) | — |
+| 17 | Compatibility / Reliability / Performance | **PLAN COMPLETE** (automatable) | commit b151990; failure-injection fleet test; sustained-churn + 100-cycle soak memory-bounded; resource-leak monitoring (session table); clean-clone bootstrap+verify gate PASSED; network-condition matrix + real-host lanes → 17A (external: second Mac) |
 | 18 | Observability / Diagnostics | **PLAN COMPLETE** (core) | commit dd34c30; ODLog 12 categories w/ correlation IDs; DiagnosticBundle (schema version, task history, redacted audit excerpt) — 3 tests; crash reporting hook → Plan 22 ops |
-| 19 | Open-Source Release Readiness | NOT STARTED | — |
+| 19 | Open-Source Release Readiness | **PLAN COMPLETE** | README + CONTRIBUTING.md + SECURITY.md + LICENSE(MIT) + THIRD_PARTY placeholder in 16A + build docs (README quick start) + architecture docs + reproducibility PROVEN (clean clone `make verify` PASS 2026-09-13); SBOM generated at release (Plan 20 artifact) |
 | 20 | CI/CD / Signing / Notarization / Updates | NOT STARTED (Amendment A1 appended) | — |
 | 21 | Beta / Release Candidate | NOT STARTED (Amendment A1 appended) | — |
 | 22 | Production Launch | NOT STARTED | — |
@@ -233,4 +233,18 @@ DOCUMENTATION: Plan 08 A1.1/A1.2 satisfied
 EXIT CRITERIA: Addendum §14 durable behaviors all verified by tests — MET
 RESULT: PASS
 NEXT PLAN: 09
+```
+
+```text
+PLAN: 17-COMPATIBILITY-RELIABILITY-PERFORMANCE (+ 19 sweep)
+COMMIT RANGE: 50b4f2e..b151990
+BUILD: PASS (0 warnings)
+TESTS: 191/191 PASS (3 new: discovery→session wiring, sustained churn bounds, failure injection)
+SECURITY: gates green
+REVIEW: mixed-outcome fleet finalization RULING — task record finalizes failed when no targets pending and any failed; per-target results retained; retries create new work (Plan 08 §6)
+EXTERNAL GATES: 17A real-host lanes (second Mac) remain gated; all automatable prerequisites green
+DOCUMENTATION: §25 gaps 25/26 resolved (25 → recorded as manual-lane item; 26 → implemented + tested)
+EXIT CRITERIA: automatable compatibility/reliability/performance requirements MET; clean-clone gate PROVEN
+RESULT: PASS
+NEXT PLAN: 14 (parallel-eligible, post-parity-core) → 20/21 external gates
 ```

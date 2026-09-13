@@ -65,7 +65,6 @@
       "rfb.partial_socket_read_tests",
       "rfb.network_framework_threading_assertions",
       "rfb.connection_soak_100_cycle",
-      "discovery.cidr_scan_dedupe",
       "discovery.identity_reconciliation",
       "discovery.device_states_lifecycle",
       "groups.smart_groups_predicates",
@@ -74,8 +73,6 @@
       "scheduler.run_once_later",
       "scheduler.on_reconnect_on_predicate",
       "files.checksum_verified_transfers",
-      "inventory.historical_diff_comparison_aggregates",
-      "gui.discovery_concurrency",
       "gui.onboarding_permission_detection",
       "gui.accessibility_verification",
       "security.keychain_store",
@@ -85,8 +82,7 @@
       "release.developer_id_notarization",
       "release.update_feed_sparkle",
       "release.alpha_beta_rc_milestones",
-      "release.v1_public_launch",
-      "cli.json_output_everywhere"
+      "release.v1_public_launch"
     ],
     "SUPERSEDED": [
       "rfb.scaffold_ard30_client",
@@ -140,16 +136,15 @@
       2,
       8,
       11,
-      19
+      19,
+      26
     ],
     "gaps": [
-      25,
-      26
+      25
     ],
     "gapDetail": {
       "16": "Add duplicate task rejection test",
-      "25": "Add GUI launch smoke (XCTest)",
-      "26": "Add GUI discovery concurrency test"
+      "25": "Add GUI launch smoke (XCTest)"
     }
   },
   "governance": {
