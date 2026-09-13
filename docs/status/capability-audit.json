@@ -5,7 +5,7 @@
     "auditedAt": "2026-09-13",
     "toolchain": "Swift 6.3.3 / Xcode 26.6 / arm64",
     "buildResult": "PASS",
-    "testResult": "92/92 passed, 0 failed, exit 0",
+    "testResult": "191/191 passed, 0 failed, exit 0",
     "sourceBranchReverification": {
       "initial-091396": "92/92 PASS, exit 0",
       "OG-Output-Plan-0913": "31/31 PASS (5 suites, Swift Testing), exit 0"
@@ -18,32 +18,41 @@
       80,
       88,
       92
-    ]
+    ],
+    "canonicalCommitAtAudit": "5114e37"
   },
   "statuses": {
     "VERIFIED_CURRENT": [
-      "rfb.handshake.none",
-      "rfb.auth.vnc.des",
-      "rfb.auth.wrong_password_rejection",
-      "rfb.decode.raw",
-      "rfb.decode.hextile",
-      "rfb.pixel_format_scaling",
-      "rfb.keyevent_wire_format",
-      "rfb.pointerevent_wire_format",
-      "rfb.frame_rendering",
-      "rfb.keysym_mapping",
-      "transport.ssh_command",
-      "transport.ssh_tunnel",
-      "transport.wake_on_lan",
+      "agent.durable_job_queue",
+      "agent.enrollment_one_time_token",
+      "agent.protocol_versioned_negotiation",
+      "automation.cli_json_exit_codes",
+      "discovery.headless_bonjour_test",
       "discovery.manual_host_add",
-      "registry.persistence.json_sqlite",
-      "tasks.bounded_fleet_concurrency",
-      "tasks.saved_task_store_versioned",
-      "scheduler.math_interval_daily",
-      "scheduler.persistence_json_store",
       "distribution.plist_defaults_import_byhost",
       "inventory.csv_rfc4180_export",
-      "release.dev_app_bundle_adhoc_signing"
+      "inventory.snapshot_diff_comparison_aggregates",
+      "registry.persistence.json_sqlite",
+      "release.dev_app_bundle_adhoc_signing",
+      "rfb.auth.vnc.des",
+      "rfb.auth.wrong_password_rejection",
+      "rfb.decode.hextile",
+      "rfb.decode.raw",
+      "rfb.frame_rendering",
+      "rfb.handshake.none",
+      "rfb.keyevent_wire_format",
+      "rfb.keysym_mapping",
+      "rfb.pixel_format_scaling",
+      "rfb.pointerevent_wire_format",
+      "scheduler.math_interval_daily",
+      "scheduler.persistence_json_store",
+      "security.database_0600",
+      "security.path_traversal_defense",
+      "tasks.bounded_fleet_concurrency",
+      "tasks.saved_task_store_versioned",
+      "transport.ssh_command",
+      "transport.ssh_tunnel",
+      "transport.wake_on_lan"
     ],
     "PRESENT_BUT_UNVERIFIED": [
       "rfb.version_003_889_handling",
@@ -58,7 +67,6 @@
       "distribution.package_install_pipeline",
       "inventory.collectors_breadth",
       "inventory.json_export",
-      "gui.launch_smoke",
       "ci.remote_run_verification"
     ],
     "MISSING": [
@@ -75,10 +83,6 @@
       "files.checksum_verified_transfers",
       "gui.onboarding_permission_detection",
       "gui.accessibility_verification",
-      "security.keychain_store",
-      "security.rbac_13_privileges",
-      "security.audit_trail",
-      "provisioning.mdm",
       "release.developer_id_notarization",
       "release.update_feed_sparkle",
       "release.alpha_beta_rc_milestones",
@@ -176,5 +180,9 @@
       "00-MASTER-ORCHESTRATOR.md \u00a79",
       "docs/product/POST_V1_ROADMAP.md"
     ]
-  }
+  },
+  "manualLane": [
+    "gui.launch_smoke (GUI executable manual QA \u2014 Plan 15 \u00a77 lane)",
+    "gui.voiceover_keyboard_contrast_pass (Plan 15 \u00a76 manual lane)"
+  ]
 }

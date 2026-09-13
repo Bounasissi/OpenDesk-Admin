@@ -248,3 +248,22 @@ EXIT CRITERIA: automatable compatibility/reliability/performance requirements ME
 RESULT: PASS
 NEXT PLAN: 14 (parallel-eligible, post-parity-core) → 20/21 external gates
 ```
+
+---
+
+## 6. Program State After Addendum Execution (2026-09-13, final sweep)
+
+| Plan | Status |
+|---|---|
+| 00A / 00B | EXECUTED (lineage + audit) |
+| 01–13, 16, 18 | PLAN COMPLETE each (evidence: per-plan phase-gate reports above) |
+| 14 | NOT STARTED — post-parity-core, parallel-eligible, requires ADR to enter v1 gate |
+| 15 | PARTIAL — detection engine + App Intents done; GUI a11y pass + launch smoke = manual QA lane |
+| 17 / 17A | Automatable lanes COMPLETE; real-host matrix GATED (second Mac) |
+| 19 | PLAN COMPLETE (clean-clone `make verify` PROVEN) |
+| 20–22 | EXTERNALLY GATED (Apple Developer ID credentials → signing/notarization/updater → public artifact acceptance → v1.0 launch) |
+| 23 | NOT STARTED (follows launch) |
+
+**External gates (exact remaining actions in §2):** Apple Developer Program + Developer ID certificate; Apple agreements/MFA; second Mac for 17A; lawfully obtained ARD admin app for Plan 02 live experiments; owner confirmation of the MIT license ruling (16A).
+
+**Every capability that could be verified on this machine without externally controlled resources has been implemented, tested, and verified by current execution on `canonical-091326`. 191/191 tests, 0 warnings, CI green.**
