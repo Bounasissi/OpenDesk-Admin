@@ -111,6 +111,7 @@ struct OpenDeskCLI {
             opendesk install --host <hostname> --pkg <path>
             opendesk discover --cidr 192.168.1.0/24 [--ports 5900,22,3283] [--limit 16]
             opendesk devices [--json]
+            opendesk serve --socket <path>            (versioned local JSON API over UDS)
 
         Screen observation requires the client's Screen Sharing (VNC) service.
         Tasks/inventory/distribution require SSH access with admin credentials.
@@ -204,6 +205,30 @@ struct OpenDeskCLI {
         return 0
     }
 
+    static func handleServe(_ args: [String]) throws -> Int32 {
+        var socketPath: String?
+        var i = 0
+        while i < args.count {
+            if args[i] == "--socket" {
+                i += 1
+                socketPath = args[safe: i]
+            }
+            i += 1
+        }
+        let path = socketPath ?? (FileManager.default.temporaryDirectory
+            .appendingPathComponent("od-\(UUID().uuidString.prefix(8))")
+            .appendingPathComponent("s.sock").path)
+        guard let db = try? AppBootstrap.openDatabase() else {
+            fputs("serve: database unavailable\n", stderr)
+            return 3
+        }
+        let server = try LocalAPIServer(socketPath: path, database: db)
+        try server.bind()
+        print("Local API listening: \(path)")
+        try server.runAcceptLoop() // blocking; Ctrl-C terminates
+        return 0
+    }
+
     private static func recordDiscoverAudit(db: SQLiteDatabase, cidr: String) {
         try? SQLiteAuditRepository(db: db).record(AuditEvent(
             actor: "cli",
@@ -284,6 +309,21 @@ struct OpenDeskCLI {
             return 0
         case "list":
             let hosts = registry.loadAll()
+            let json = args.contains("--json")
+            if json {
+                struct HostJSON: Encodable {
+                    let hostname: String
+                    let username: String
+                    let auth: String
+                    let groups: [String]
+                }
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                if let data = try? encoder.encode(hosts.map { HostJSON(hostname: $0.hostname, username: $0.username, auth: $0.authMethod.rawValue, groups: $0.groups) }) {
+                    print(String(decoding: data, as: UTF8.self))
+                }
+                return 0
+            }
             if hosts.isEmpty {
                 print("No hosts registered. Add one: opendesk hosts add <hostname> <username>")
                 return 0

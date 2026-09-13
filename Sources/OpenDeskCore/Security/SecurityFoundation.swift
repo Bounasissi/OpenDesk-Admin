@@ -194,3 +194,37 @@ public func redactSecrets(in text: String, secrets: [String]) -> String {
     }
     return result
 }
+
+/// Key-based parameter redaction (Plan 18 §3 / Plan 05 §7.6): any parameter
+/// whose key indicates secret material is replaced wholesale. Applied before
+/// persistence (audit) and before diagnostic export (defense in depth).
+public func redactParameterKeys(in text: String) -> String {
+    let sensitiveKeys = ["password", "secret", "token", "vncpassword", "credential", "privatekey", "key"]
+    var result = text
+    for key in sensitiveKeys {
+        // Scan JSON-style "key": "value" pairs. The key's OPENING quote is the
+        // second quote before the colon (the last one is its closing quote).
+        var searchStart = result.startIndex
+        while let colonRange = result.range(of: ":", range: searchStart..<result.endIndex) {
+            let keyEndQuote = result[..<colonRange.lowerBound].lastIndex(of: "\"")
+            guard let keyStartQuote = keyEndQuote.flatMap({ result[..<$0].lastIndex(of: "\"") }) else {
+                searchStart = colonRange.upperBound
+                continue
+            }
+            let keyText = result[result.index(after: keyStartQuote)..<keyEndQuote!].lowercased()
+            let afterColon = colonRange.upperBound
+            guard let valueStart = result.range(of: "\"", range: afterColon..<result.endIndex)?.lowerBound,
+                  let valueEndQuote = result.range(of: "\"", range: result.index(after: valueStart)..<result.endIndex)?.lowerBound else {
+                searchStart = colonRange.upperBound
+                continue
+            }
+            if sensitiveKeys.contains(where: { keyText.contains($0) }) {
+                result = result.replacingCharacters(in: keyStartQuote...valueEndQuote, with: "\"[REDACTED]\"")
+                searchStart = result.startIndex
+                continue
+            }
+            searchStart = afterColon
+        }
+    }
+    return result
+}
