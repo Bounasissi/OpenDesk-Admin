@@ -55,12 +55,15 @@ swift run opendesk --help        # CLI entry point
 | File push/pull (SFTP, SHA-256 verified) | **implemented** | core/Transfers |
 | Package install pipeline (checksum → stage → installer → cleanup) | **implemented** | core/Transfers |
 | Inventory collectors (hw/os/net/storage/apps/users) | **implemented** | core/Inventory |
-| CLI: discover / devices / exec / copy / install / inventory / tasks / audit | **implemented** | apps/cli |
-| RFB/VNC remote control (ARD auth type 30) | next | packages/rfb |
-| Groups + Smart Groups predicates | next | core |
-| Scheduler (RRULE, on-reconnect) | next | core |
+| RFB/VNC client (RFC 6143: handshake, VNC auth DES, raw/copyrect/hextile, input events) | **implemented** | core/RFBClient |
+| Scheduler (RRULE subset, one-shot, on-reconnect) | **implemented** | core/Scheduler |
+| Smart Groups predicate engine (AND/OR, version compare) | **implemented** | core/Scheduler |
+| Power management (Wake-on-LAN, sleep/restart/shutdown/logout) | **implemented** | core/Scheduler |
+| CLI: discover/devices/exec/copy/install/inventory/groups/power/schedule/tasks/audit | **implemented** | apps/cli |
+| RFB live session UI + multi-observe grid | next | apps/admin-macos |
 | Task Server worker (offline execution) | next | core |
 | SwiftUI admin console | next | apps/admin-macos |
+| OpenDesk agent (V2) | later | apps/agent-macos |
 
 ## CLI Usage
 
