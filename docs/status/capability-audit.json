@@ -69,7 +69,6 @@
       "discovery.identity_reconciliation",
       "discovery.device_states_lifecycle",
       "groups.smart_groups_predicates",
-      "tasks.durable_states",
       "tasks.idempotency_keys",
       "scheduler.rrule",
       "scheduler.run_once_later",
@@ -89,7 +88,6 @@
       "release.alpha_beta_rc_milestones",
       "release.v1_public_launch",
       "cli.json_output_everywhere",
-      "automation.local_api_unix_socket",
       "automation.app_intents"
     ],
     "SUPERSEDED": [

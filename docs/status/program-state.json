@@ -2,10 +2,23 @@
   "product": "OpenDesk",
   "release": null,
   "canonicalBranch": "canonical-091326",
-  "prePlansExecuted": ["00A-REPOSITORY-LINEAGE-RECONCILIATION", "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"],
-  "currentPlan": "10-MULTI-OBSERVE-SESSIONS",
+  "prePlansExecuted": [
+    "00A-REPOSITORY-LINEAGE-RECONCILIATION",
+    "00B-CONVERSATION-CLAIMS-EVIDENCE-AUDIT"
+  ],
+  "currentPlan": "11-OPENDESK-ENDPOINT-AGENT",
   "status": "executing",
-  "completedPlans": ["01-REPOSITORY-BASELINE", "03-ARCHITECTURE-FOUNDATION", "04-DEVICE-DISCOVERY-REGISTRY", "05-IDENTITY-SECRETS-SECURITY", "06-RFB-REMOTE-CONTROL", "07-SSH-FILES-PACKAGES-POWER"],
+  "completedPlans": [
+    "01-REPOSITORY-BASELINE",
+    "03-ARCHITECTURE-FOUNDATION",
+    "04-DEVICE-DISCOVERY-REGISTRY",
+    "05-IDENTITY-SECRETS-SECURITY",
+    "06-RFB-REMOTE-CONTROL",
+    "07-SSH-FILES-PACKAGES-POWER",
+    "10-MULTI-OBSERVE-SESSIONS",
+    "12-CLI-API-SHORTCUTS",
+    "18-OBSERVABILITY-DIAGNOSTICS"
+  ],
   "externalGates": [
     {
       "gate": "Owner confirmation of MIT license ruling + scaffold-source relicensing decision",
