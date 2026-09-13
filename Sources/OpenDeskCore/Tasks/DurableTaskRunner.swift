@@ -88,7 +88,7 @@ public final class DurableTaskRunner: @unchecked Sendable {
             for target in pendingTargets {
                 guard let deviceIDRaw = target.opt("device_id") else { continue }
                 let device = try devices.load(DeviceID(rawValue: deviceIDRaw))
-                guard var device, device.lifecycle != .retired else {
+                guard let device, device.lifecycle != .retired else {
                     try markTarget(taskID: taskID, deviceIDRaw: deviceIDRaw, state: "failed", detail: "target retired/unknown")
                     continue
                 }
