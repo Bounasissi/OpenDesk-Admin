@@ -14,7 +14,9 @@ let package = Package(
     targets: [
         .target(
             name: "OpenDeskCore",
-            path: "packages/core/Sources/OpenDeskCore"
+            path: "packages/core/Sources/OpenDeskCore",
+            resources: [.copy("Resources/schema.sql")],
+            linkerSettings: [.linkedLibrary("sqlite3")]
         ),
         .executableTarget(
             name: "OpenDeskCLI",
