@@ -42,11 +42,14 @@ openDesk plan:   implementing plan
 | 8 | command | command dispatch behavior |
 | 9 | wake | WoL/remote wake behavior |
 | 10 | restart / shutdown | power task semantics, session teardown |
-| 11 | reports | report data shape (classification B candidates) |
-| 12 | scheduled task | scheduling model observed (classification D target) |
-| 13 | offline task | queued behavior when endpoint offline |
-| 14 | multi-observe | concurrent observation behavior |
-| 15 | failure/reconnect | disconnect behavior, reconnect semantics |
+| 11 | sleep | sleep trigger + wake propagation behavior |
+| 12 | logout | user-session logout semantics + confirmation policy |
+| 13 | inventory | inventory data shape (classification B candidates) |
+| 14 | reports | report data shape (classification B candidates) |
+| 15 | scheduled task | scheduling model observed (classification D target) |
+| 16 | offline task | queued behavior when endpoint offline |
+| 17 | multi-observe | concurrent observation behavior |
+| 18 | failure/reconnect | disconnect behavior, reconnect semantics |
 
 ---
 
@@ -54,10 +57,11 @@ openDesk plan:   implementing plan
 
 | Experiment | Status | Evidence | Classification |
 |---|---|---|---|
-| 1–15 | PENDING (Plan 02) | — | — |
+| 1–9 | PENDING-GATED (live ARD admin required) | bundle observations recorded (ARD-BUNDLE-001..003) | — |
+| 10–18 | PENDING-GATED (live ARD admin required) | — | — |
 
 Rules:
 
-- All 15 experiments must reach `RECORDED` before the Plan 02 exit gate.
+- All 18 experiments must reach `RECORDED` (or explicitly GATED with the admin-app install action) before the Plan 02 exit gate. Static bundle observations are complete and recorded (`reverse-engineering/protocol-observations/CLIENT-BUNDLE-FACTS.md`); live behavioral experiments are externally gated on a lawfully obtained ARD admin installation.
 - Classification changes after Plan 02 require an ADR.
 - No experiment may record secret material (passwords, keys) — redaction policy applies.

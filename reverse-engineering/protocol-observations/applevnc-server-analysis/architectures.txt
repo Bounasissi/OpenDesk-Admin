@@ -1,0 +1,32 @@
+== AppleVNCServer: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/MacOS/AppleVNCServer:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    55       7112   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== sshHelper: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/sshHelper:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    22       2472   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== LockScreen: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/LockScreen.app/Contents/MacOS/LockScreen:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    29       3816   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== VNCPrivilegeProxy: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/VNCPrivilegeProxy:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    24       2664   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== writesettings: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/writesettings: is not an object file
+== Share: architectures ==
+== Screen: architectures ==
+== Share: architectures ==
+== Screen: architectures ==
+== Request: architectures ==
+== SSDragHelper: architectures ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/SSDragHelper.app/Contents/MacOS/SSDragHelper:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    30       3832   NOUNDEFS DYLDLINK TWOLEVEL PIE

@@ -1,0 +1,11 @@
+== resource inventory ==
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/LockScreen.app/Contents/Resources/Base.lproj/MainMenu.nib
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/LockScreen.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/LockScreen.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/Share Screen Request.app/Contents/Resources/Base.lproj/GuestApp.nib
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/Share Screen Request.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/Share Screen Request.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/SSDragHelper.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Support/SSDragHelper.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/AppleVNCServer.bundle/Contents/version.plist

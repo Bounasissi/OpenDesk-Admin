@@ -1,0 +1,26 @@
+== Info.plist ==
+{
+  "_STAttributionDisplayName" => "Screen Sharing"
+  "BuildMachineOSBuild" => "23A344017"
+  "CFBundleDevelopmentRegion" => "en"
+  "CFBundleExecutable" => "AppleVNCServer"
+  "CFBundleIdentifier" => "com.apple.AppleVNCServer"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleName" => "AppleVNCServer"
+  "CFBundlePackageType" => "BNDL"
+  "CFBundleSignature" => "avnc"
+  "CFBundleSupportedPlatforms" => [
+    0 => "MacOSX"
+  ]
+  "CFBundleVersion" => "756.36.5.2"
+  "DTCompiler" => "com.apple.compilers.llvm.clang.1_0"
+  "DTPlatformBuild" => ""
+  "DTPlatformName" => "macosx"
+  "DTPlatformVersion" => "27.0"
+  "DTSDKBuild" => "26A411"
+  "DTSDKName" => "macosx27.0.internal"
+  "DTXcode" => "2700"
+  "DTXcodeBuild" => "27A200c"
+  "LSMinimumSystemVersion" => "27.0"
+  "LSUIElement" => "1"
+}

@@ -1,0 +1,20 @@
+== resource inventory ==
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/com.apple.SSInvitationAgent.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/com.apple.private.alloy.safeview.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/PermissionWindowController.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleCareMessage.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleSupportTerms.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleSupportMessage.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleCareShareSettingsTerms.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/MainMenu.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleCareMessageLiveMonitoring.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleSupportShareSettingsTerms.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Resources/Base.lproj/AppleCareTerms.nib
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSAssistanceCursor.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSAssistanceCursor.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSPasteboardHelper.bundle/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSPasteboardHelper.bundle/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/version.plist

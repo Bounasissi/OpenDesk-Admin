@@ -1,0 +1,37 @@
+== ARDAgent: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/MacOS/ARDAgent:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    47       5976   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== kickstart: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart: is not an object file
+== ardpackage: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/ardpackage:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    24       3296   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== build_hd_index: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/build_hd_index:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    24       3464   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== Shared: architectures ==
+== Screen: architectures ==
+== Shared: architectures ==
+== Screen: architectures ==
+== Viewer: architectures ==
+== distnotifyutil: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/distnotifyutil:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    19       1368   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== sysinfocachegen: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/sysinfocachegen:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    29       4032   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== tccstate: architectures ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/tccstate:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    23       2032   NOUNDEFS DYLDLINK TWOLEVEL PIE

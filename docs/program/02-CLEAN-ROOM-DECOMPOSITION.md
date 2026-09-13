@@ -68,7 +68,7 @@ network endpoints
 
 Harness output is stored as derived observations under `docs/clean-room/` (or a data directory it owns). The harness lives in `scripts/` and runs only on operator-provided local ARD installs.
 
-### 3.2 Behavioral corpus
+### 3.2 Behavioral corpus (Amendment A1: 18 behaviors)
 
 Define experiments for every material ARD behavior (experiment template in `docs/clean-room/ARD_BEHAVIOR_MATRIX.md`):
 
@@ -82,13 +82,16 @@ copy
 install
 command
 wake
+sleep
 restart
 shutdown
+logout
 reports
 scheduled task
 offline task
 multi-observe
 failure/reconnect
+inventory
 ```
 
 Each experiment records:

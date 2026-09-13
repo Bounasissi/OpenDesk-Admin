@@ -1,0 +1,14 @@
+== Info.plist ==
+{
+  "_STAttributionDisplayName" => "Screen Sharing"
+  "CFBundleDevelopmentRegion" => "English"
+  "CFBundleExecutable" => "ScreensharingAgent"
+  "CFBundleIdentifier" => "com.apple.screensharing.agent"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleName" => "ScreensharingAgent"
+  "CFBundlePackageType" => "BNDL"
+  "CFBundleShortVersionString" => "3.9.8"
+  "CFBundleSignature" => "????"
+  "CFBundleVersion" => "756.36.5.2"
+  "LSUIElement" => "1"
+}

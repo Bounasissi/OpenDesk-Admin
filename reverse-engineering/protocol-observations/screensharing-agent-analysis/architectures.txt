@@ -1,0 +1,20 @@
+== ScreensharingAgent: architectures ==
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    51       6336   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== SSInvitationAgent: architectures ==
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSInvitationAgent.app/Contents/MacOS/SSInvitationAgent:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    65       8216   NOUNDEFS DYLDLINK TWOLEVEL WEAK_DEFINES BINDS_TO_WEAK PIE
+== SSAssistanceCursor: architectures ==
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSAssistanceCursor.app/Contents/MacOS/SSAssistanceCursor:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    34       4880   NOUNDEFS DYLDLINK TWOLEVEL PIE
+== SSPasteboardHelper: architectures ==
+/System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/Support/SSPasteboardHelper.bundle/Contents/MacOS/SSPasteboardHelper:
+Mach header
+      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    28       3664   NOUNDEFS DYLDLINK TWOLEVEL PIE

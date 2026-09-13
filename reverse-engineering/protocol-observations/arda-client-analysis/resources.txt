@@ -1,0 +1,9 @@
+== resource inventory ==
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/com.apple.RemoteDesktop.plist
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/Resources/Base.lproj/SharedScreenViewer.nib
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/Resources/Base.lproj/SSNotificationOverlayViewController.nib
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/Resources/Base.lproj/MainMenu.nib
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Support/Shared Screen Viewer.app/Contents/version.plist
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Info.plist
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/version.plist
