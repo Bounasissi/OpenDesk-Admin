@@ -1,0 +1,50 @@
+name: Release
+
+# Plan 20: release assembly dry run. The signing/notarization steps are
+# externally gated (Apple Developer ID credentials — PROGRAM_STATUS §2);
+# everything else is exercised here: build, tests, SBOM, checksums, artifact
+# assembly (unsigned), and explicit gate marking.
+
+on:
+  push:
+    tags: ["v*"]
+    branches: [canonical-091326]
+  workflow_dispatch:
+
+jobs:
+  release-dry-run:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify (build + lint + test + secret-scan + license-check)
+        run: make verify
+
+      - name: Generate SBOM
+        run: ./scripts/generate-sbom.sh > sbom.json
+
+      - name: Assemble artifact (unsigned dry run)
+        run: |
+          ./scripts/build-app.sh release
+          mkdir -p artifacts
+          # SBOM + checksums are publishable regardless of signing state.
+          cp sbom.json artifacts/
+          shasum -a 256 sbom.json > artifacts/sbom.json.sha256
+
+      - name: Signing gate (external — expected to be marked, never faked)
+        run: |
+          if [ -z "${{ secrets.DEVELOPER_ID_APPLICATION }}" ]; then
+            echo "SIGNING GATE: Apple Developer ID credentials unavailable."
+            echo "This artifact is an UNSIGNED DRY RUN — it must never be published as a release."
+            echo "Remaining action (owner): enroll in Apple Developer Program, issue Developer ID"
+            echo "Application certificate, add DEVELOPER_ID_APPLICATION + DEVELOPER_ID_INSTALLER +"
+            echo "APP_STORE_CONNECT_API_KEY secrets, then re-run with codesign/notarization enabled."
+            exit 0
+          fi
+          echo "Signing path present (placeholder for codesign/notarization wiring)."
+
+      - name: Upload dry-run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: opendesk-unsigned-dry-run
+          path: artifacts/
