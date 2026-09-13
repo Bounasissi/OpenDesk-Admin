@@ -17,6 +17,11 @@ public struct MachineReport: Codable, Sendable {
     public var uptimeSeconds: Int?
     public var installedApps: [AppEntry]
     public var collectedAt: Date
+    // Drift fields (Plan 09 A1.1) — optional so legacy JSON decodes unchanged.
+    public var storageFreeGB: Int? = nil
+    public var agentInstalled: Bool? = nil
+    public var managementStatus: String? = nil
+
 }
 
 /// Collects hardware and software inventory from a machine.
