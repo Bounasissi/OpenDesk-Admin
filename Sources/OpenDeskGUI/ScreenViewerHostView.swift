@@ -10,10 +10,18 @@ struct ScreenViewerHostView: View {
 
     var body: some View {
         Group {
-            if let host = coordinator.activeHost {
+            if let streamer = coordinator.activeStreamer {
                 ScreenViewerView(
-                    streamer: ScreenStreamerCoordinator.shared.streamer(for: host, password: coordinator.password)
+                    streamer: streamer,
+                    onConnectWithPassword: { coordinator.connectWithPassword($0) },
+                    onDisconnect: { coordinator.disconnect() }
                 )
+            } else if coordinator.activeHost != nil {
+                VStack(spacing: 12) {
+                    Text(coordinator.errorMessage ?? "Unable to open the screen session.")
+                        .foregroundStyle(.secondary)
+                    Button("Dismiss") { coordinator.disconnect() }
+                }
             } else {
                 picker
             }
@@ -49,24 +57,5 @@ struct ScreenViewerHostView: View {
                 .foregroundStyle(.secondary)
         }
         .padding()
-    }
-}
-
-/// Owns the live streamer instance so re-renders of the window don't restart
-/// the RFB connection.
-@MainActor
-final class ScreenStreamerCoordinator {
-    static let shared = ScreenStreamerCoordinator()
-    private var current: (host: OpenDeskCore.Host, streamer: ScreenStreamer)?
-
-    func streamer(for host: OpenDeskCore.Host, password: String) -> ScreenStreamer {
-        if let current, current.host.id == host.id, current.streamer.isConnected {
-            return current.streamer
-        }
-        current?.streamer.stopStreaming()
-        let streamer = ScreenStreamer(host: host, password: password.isEmpty ? nil : password)
-        streamer.startStreaming()
-        current = (host, streamer)
-        return streamer
     }
 }

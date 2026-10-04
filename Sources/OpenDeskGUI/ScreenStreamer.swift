@@ -13,6 +13,9 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
     @Published var controlMode = false
 
     private var thread: Thread?
+    /// A streamer represents one connection attempt. Reconnection creates a
+    /// fresh instance so a late worker from a cancelled attempt cannot revive.
+    private var hasStarted = false
     // Lock-guarded shared state: written by the RFB update thread and read/
     // written on the main thread. stateLock is the synchronization point.
     private nonisolated(unsafe) var stopFlag = false
@@ -21,18 +24,22 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
     private nonisolated(unsafe) var client: RFBClient?
     private nonisolated(unsafe) var connection: RFBConnection?
     private nonisolated(unsafe) var framebuffer: Framebuffer?
+    /// RFB writes originate on both the update thread and UI event path.
+    /// Serialize complete protocol messages so bytes cannot interleave.
+    private let protocolWriteLock = NSLock()
 
     let host: OpenDeskCore.Host
     let password: String?
     /// Quality tier pacing (Plan 10 §3): throttles frame-request cadence
     /// without reconnecting (tier change preserves the connection).
-    /// nonisolated(unsafe): written on the main actor via applyQualityTier,
-    /// read by the update thread; the tier value is a simple enum write.
-    private nonisolated(unsafe) var qualityTier: QualityTier = .focused
+    /// Access is serialized by stateLock because the update thread reads it
+    /// while the main actor may change tiers.
+    private nonisolated(unsafe) var qualityTier: QualityTier
 
-    init(host: OpenDeskCore.Host, password: String? = nil) {
+    init(host: OpenDeskCore.Host, password: String? = nil, qualityTier: QualityTier = .focused) {
         self.host = host
         self.password = password
+        self.qualityTier = qualityTier
     }
 
     deinit {
@@ -43,14 +50,19 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
         stopFlag = true
         lock.unlock()
         backgroundThread?.cancel()
-        DispatchQueue.main.async { [weak self] in
-            self?.connection?.close()
-        }
+        protocolWriteLock.lock()
+        stateLock.lock()
+        connection?.close()
+        stateLock.unlock()
+        protocolWriteLock.unlock()
     }
 
     func startStreaming() {
-        guard !isConnected else { return }
+        guard !hasStarted else { return }
+        hasStarted = true
+        stateLock.lock()
         stopFlag = false
+        stateLock.unlock()
         status = "Connecting to \(host.hostname):\(host.screenPort)…"
         let target = host
         let password = self.password
@@ -68,9 +80,13 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
         stopFlag = true
         stateLock.unlock()
         thread?.cancel()
+        protocolWriteLock.lock()
         stateLock.lock()
         connection?.close()
         stateLock.unlock()
+        protocolWriteLock.unlock()
+        isConnected = false
+        status = "Disconnected."
     }
 
     // MARK: - Update loop (background thread)
@@ -79,6 +95,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
         do {
             let tcp = try TCPConnection(host: host.hostname, port: UInt16(host.screenPort))
             stateLock.lock()
+            guard !stopFlag else {
+                stateLock.unlock()
+                tcp.close()
+                return
+            }
             connection = tcp
             stateLock.unlock()
 
@@ -86,6 +107,7 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
             try rfb.handshake(password: password)
             try rfb.setPixelFormat(.standard32)
             try rfb.setEncodings()
+            guard !isStopped(), !Thread.current.isCancelled else { return }
 
             guard let dims = rfb.dimensions else {
                 throw RFBError.handshakeFailed("no framebuffer dimensions")
@@ -95,22 +117,28 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
             framebuffer = try Framebuffer(width: Int(dims.width), height: Int(dims.height))
             stateLock.unlock()
 
-            // First update is a full request; subsequent are incremental.
-            try rfb.requestFramebufferUpdate(incremental: false)
-
-            let displayHost = rfb.serverName.isEmpty ? host.hostname : rfb.serverName
-            DispatchQueue.main.async { [weak self] in
-                self?.isConnected = true
-                self?.status = "Connected: \(displayHost) (\(dims.width)×\(dims.height))"
+            // First update is a full request. Later requests are issued only
+            // after the selected tier's cadence interval, and never while
+            // suspended. This avoids accumulating unsolicited framebuffer
+            // updates in the socket receive buffer.
+            protocolWriteLock.lock()
+            do {
+                try rfb.requestFramebufferUpdate(incremental: false)
+                protocolWriteLock.unlock()
+            } catch {
+                protocolWriteLock.unlock()
+                throw error
             }
 
-            var firstUpdate = true
+            let displayHost = rfb.serverName.isEmpty ? host.hostname : rfb.serverName
+            guard !isStopped(), !Thread.current.isCancelled else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self, !self.isStopped() else { return }
+                self.isConnected = true
+                self.status = "Connected: \(displayHost) (\(dims.width)×\(dims.height))"
+            }
+
             while !isStopped() && !Thread.current.isCancelled {
-                // Tier pacing: sleep between requests per tier cap (no reconnect).
-                let interval = qualityTier.frameRequestIntervalMs
-                if interval != .max, interval > 0 {
-                    Thread.sleep(forTimeInterval: Double(interval) / 1000.0)
-                }
                 let rects = try rfb.readFramebufferUpdate(format: .standard32)
                 stateLock.lock()
                 let fb = framebuffer
@@ -127,15 +155,38 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
                         self?.frame = handoff.image
                     }
                 }
-                if firstUpdate {
-                    firstUpdate = false
+                // Wait in short slices so Stop/Suspend takes effect promptly.
+                while !isStopped() && !Thread.current.isCancelled {
+                    let intervalMs = currentFrameRequestIntervalMs()
+                    if intervalMs == Int.max {
+                        Thread.sleep(forTimeInterval: 0.1)
+                        continue
+                    }
+                    let deadline = ProcessInfo.processInfo.systemUptime + Double(intervalMs) / 1000.0
+                    while !isStopped() && !Thread.current.isCancelled {
+                        let remaining = deadline - ProcessInfo.processInfo.systemUptime
+                        if remaining <= 0 { break }
+                        if currentFrameRequestIntervalMs() == Int.max { break }
+                        Thread.sleep(forTimeInterval: min(remaining, 0.05))
+                    }
+                    break
                 }
-                try rfb.requestFramebufferUpdate(incremental: !firstUpdate)
+                guard !isStopped(), !Thread.current.isCancelled else { break }
+                protocolWriteLock.lock()
+                do {
+                    try rfb.requestFramebufferUpdate(incremental: true)
+                    protocolWriteLock.unlock()
+                } catch {
+                    protocolWriteLock.unlock()
+                    throw error
+                }
             }
         } catch {
+            protocolWriteLock.lock()
             stateLock.lock()
             connection?.close()
             stateLock.unlock()
+            protocolWriteLock.unlock()
             DispatchQueue.main.async { [weak self] in
                 self?.isConnected = false
                 self?.status = "Streaming stopped: \(error)"
@@ -145,7 +196,15 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
 
     /// Apply a quality tier without reconnect (Plan 10 §5).
     func applyQualityTier(_ tier: QualityTier) {
+        stateLock.lock()
         qualityTier = tier
+        stateLock.unlock()
+    }
+
+    private nonisolated func currentFrameRequestIntervalMs() -> Int {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return qualityTier.frameRequestIntervalMs
     }
 
     private nonisolated func isStopped() -> Bool {
@@ -162,8 +221,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
         stateLock.unlock()
         guard let client else { return }
         do {
+            protocolWriteLock.lock()
             try client.sendKeyEvent(keysym: keysym, down: down)
+            protocolWriteLock.unlock()
         } catch {
+            protocolWriteLock.unlock()
             DispatchQueue.main.async { [weak self] in
                 self?.status = "key event failed: \(error)"
             }
@@ -176,8 +238,11 @@ final class ScreenStreamer: ObservableObject {    @Published var frame: NSImage?
         stateLock.unlock()
         guard let client else { return }
         do {
+            protocolWriteLock.lock()
             try client.sendPointerEvent(x: x, y: y, buttonMask: buttonMask)
+            protocolWriteLock.unlock()
         } catch {
+            protocolWriteLock.unlock()
             DispatchQueue.main.async { [weak self] in
                 self?.status = "pointer event failed: \(error)"
             }

@@ -19,7 +19,18 @@
       88,
       92
     ],
-    "canonicalCommitAtAudit": "75297b4"
+    "canonicalCommitAtAudit": "75297b4",
+    "currentReverification": {
+      "date": "2026-10-03",
+      "branch": "plan14-session-ownership (isolated from canonical-091326)",
+      "baseCommit": "4c7ff77",
+      "buildResult": "PASS (make verify)",
+      "testResult": "199/199 passed, 0 failed, exit 0",
+      "secretScan": "PASS",
+      "licenseCheck": "PASS",
+      "guiLaunchSmoke": "PASS (alive after 3 seconds; clean termination)",
+      "scope": "Plan 14/Plan 10 GUI session-ownership and stream lifecycle remediation; not a full capability re-audit"
+    }
   },
   "statuses": {
     "VERIFIED_CURRENT": [

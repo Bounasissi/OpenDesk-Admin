@@ -6,6 +6,8 @@ import OpenDeskCore
 /// framebuffer. Supports observe (default) and control (input injection) modes.
 struct ScreenViewerView: View {
     @ObservedObject var streamer: ScreenStreamer
+    let onConnectWithPassword: (String) -> Void
+    let onDisconnect: () -> Void
     @State private var password = ""
 
     var body: some View {
@@ -24,13 +26,7 @@ struct ScreenViewerView: View {
                         SecureField("VNC password (if required)", text: $password)
                             .frame(maxWidth: 220)
                         Button("Connect with password") {
-                            streamer.stopStreaming()
-                            let target = streamer.host
-                            let pw = password.isEmpty ? nil : password
-                            Task { @MainActor in
-                                let replacement = ScreenStreamer(host: target, password: pw)
-                                replacement.startStreaming()
-                            }
+                            onConnectWithPassword(password)
                         }
                     }
                 }
@@ -57,7 +53,7 @@ struct ScreenViewerView: View {
             .toggleStyle(.switch)
             .controlSize(.small)
             Button("Disconnect") {
-                streamer.stopStreaming()
+                onDisconnect()
             }
         }
         .padding(.horizontal, 10)

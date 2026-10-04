@@ -29,8 +29,8 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 11 | OpenDesk Endpoint Agent | **PLAN COMPLETE** (protocol core) | commit efd91de; AgentHello/Welcome negotiation (one-version skew verified), EnrollmentService (one-time token → Keychain identity, reuse rejected), AgentJobQueue (restart-survivable), LaunchDaemon/LaunchAgent plists, `opendesk-agent` binary (enroll/daemon/user-agent/status — status verified live); live TLS channel + agent update path → gated on 17A fleet + 20 |
 | 12 | CLI / API / Shortcuts | **PLAN COMPLETE** (CLI+API) | commit dd34c30; LocalAPIServer (versioned UDS, 0600, no TCP) + `serve` command + 4 API tests; `docs/cli/REFERENCE.md` (--json coverage table + stable exit codes); App Intents explicitly NOT implemented yet (tracked, Plan 15) |
 | 13 | MDM / Provisioning | **PLAN COMPLETE** (guidance + diagnostics) | commit efd91de; docs/provisioning/MDM_GUIDE.md (5 vendors); `opendesk-agent status` reports §5 diagnostic fields (verified live); TCC bypass never attempted |
-| 14 | High-Performance Streaming | **PARTIAL** (consent-free core) | commit 2f7a087; AdaptiveQualityController (documented staircase thresholds, conservative recovery, bandwidth-clamp-first — 5 tests incl. §8 degradation-stability profiles); 5-channel multiplexer + loopback in-order test; ScreenCaptureKit/VideoToolbox integration CONSENT-GATED (macOS Screen Recording) |
-| 15 | UX / Accessibility / Onboarding | **PARTIAL** (detection + intents) | commit efd91de; OnboardingDetector (6 checks, unknown≠granted, corrective guidance) — 4 tests; six App Intents compiled into GUI; full GUI a11y verification + VoiceOver pass → manual QA lane (Plan 15 §7) |
+| 14 | High-Performance Streaming | **PARTIAL** (consent-free core; native capture/encode/decode/render not implemented) | AdaptiveQualityController + 5-channel framing + session/input logic; 2026-10-03 session lifecycle review/remediation in `plan14-session-ownership`; capture permission remains a runtime gate, but ScreenCaptureKit/VideoToolbox implementation is still required before Plan 14 exit |
+| 15 | UX / Accessibility / Onboarding | **PARTIAL** | OnboardingDetector + App Intents; observe UI now uses shared session manager, bounded 16-session cap and focus tier updates; VoiceOver/keyboard/contrast manual QA and complete device/task surfaces remain open |
 | 16 | Security Hardening | **PLAN COMPLETE** (sweep) | commit HEAD; THREAT_MODEL.md (14 threats → controls); DB 0600 enforced + tested; path-traversal validation + tested; command parameterization verified; secret scan + license gates green in CI; privileged-helper audit → 20 (external) |
 | 17 | Compatibility / Reliability / Performance | **PLAN COMPLETE** (automatable) | commit b151990; failure-injection fleet test; sustained-churn + 100-cycle soak memory-bounded; resource-leak monitoring (session table); clean-clone bootstrap+verify gate PASSED; network-condition matrix + real-host lanes → 17A (external: second Mac) |
 | 18 | Observability / Diagnostics | **PLAN COMPLETE** (core) | commit dd34c30; ODLog 12 categories w/ correlation IDs; DiagnosticBundle (schema version, task history, redacted audit excerpt) — 3 tests; crash reporting hook → Plan 22 ops |
@@ -308,4 +308,16 @@ DOCUMENTATION: audit JSON reflects all 26 required-test items satisfied/manual-l
 EXIT CRITERIA: alpha feature baseline + gate evidence — MET
 RESULT: ALPHA PASS
 NEXT: owner gates (Developer ID) → beta (agent, groups, scheduler, reports, CLI, onboarding, hardening, diagnostics, auto-update) → RC
+```
+
+```text
+CURRENT REVALIDATION: Plan 14 / Plan 10 GUI session ownership (2026-10-03)
+BASE: canonical-091326 at 4c7ff77; implementation isolated on plan14-session-ownership
+BUILD: PASS (SwiftPM debug + test targets)
+TESTS: 199/199 PASS, 0 failures on 2026-10-03 (current count supersedes the conversation-reported 204; historical entries above are preserved as historical evidence)
+SECURITY: secret-scan PASS; license-check PASS; input/update-thread RFB writes serialized; stream stop/close synchronized
+REVIEW: separate tiled coordinators replaced by one app-wide ObserveSessionCoordinator; single Screen Viewer now participates in the same 16-session cap; tier initialization and focus promotion are wired without reconnect; password retry replaces the displayed session; Disconnect clears the session; tile-cap errors are visible
+DEFECTS: synchronous DNS/connect remains non-interruptible while the OS connect call is in progress; returned socket is checked/closed when connect returns; bounded connect cancellation remains follow-up
+MANUAL: GUI launch smoke PASS (alive after 3s, terminated); live multi-host FPS/capacity and accessibility QA not established by this smoke
+RESULT: TASK COMPLETE (session ownership/lifecycle remediation only); Plan 14 and Plan 15 remain PARTIAL
 ```

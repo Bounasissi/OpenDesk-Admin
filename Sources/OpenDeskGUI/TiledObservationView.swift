@@ -1,12 +1,13 @@
 import SwiftUI
 import OpenDeskCore
 
-/// Multi-host tiled screen observation — ARD's signature multi-screen view.
-/// Each tile owns an independent ScreenStreamer instance.
+/// Multi-host tiled screen observation. Session and transport lifetimes are
+/// owned by `ObserveSessionCoordinator`; tiles only observe/render them.
 struct TiledObservationView: View {
     @StateObject private var tileModel = TileViewModel()
     /// Grid sizes per Plan 10 §4: exactly 2/4/8/16 (validated by gridPlan).
     @State private var columns = 2
+    @State private var focusedSessionID: SessionID?
 
     var body: some View {
         VStack(spacing: 10) {
@@ -23,15 +24,33 @@ struct TiledObservationView: View {
                 Text("\(tileModel.tiles.count) streaming")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Button("Stop All") { tileModel.stopAll() }
+                Button("Stop All") {
+                    tileModel.stopAll()
+                    focusedSessionID = nil
+                }
                     .disabled(tileModel.tiles.isEmpty)
             }
             .padding(.horizontal, 10)
 
+            if let error = tileModel.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 10)
+            }
+
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
                     ForEach(tileModel.tiles) { tile in
-                        ObservationTile(tile: tile)
+                        ObservationTile(
+                            tile: tile,
+                            isFocused: focusedSessionID == tile.sessionID,
+                            onFocus: {
+                                focusedSessionID = focusedSessionID == tile.sessionID ? nil : tile.sessionID
+                                tileModel.focus(focusedSessionID.flatMap { id in tileModel.tiles.first { $0.sessionID == id } })
+                            }
+                        )
                             .aspectRatio(16 / 10, contentMode: .fit)
                     }
                 }
@@ -43,6 +62,10 @@ struct TiledObservationView: View {
             guard let tileID = notification.object as? UUID,
                   let tile = tileModel.tiles.first(where: { $0.id == tileID }) else { return }
             tileModel.removeTile(tile)
+            if focusedSessionID == tile.sessionID {
+                focusedSessionID = nil
+                tileModel.focus(nil)
+            }
         }
         .safeAreaInset(edge: .bottom) {
             TileHostPicker(hosts: tileModel.availableHosts, activeHostnames: Set(tileModel.tiles.map(\.host.hostname))) { host in
@@ -61,6 +84,8 @@ extension Notification.Name {
 
 struct ObservationTile: View {
     @ObservedObject var tile: ObservationTileModel
+    let isFocused: Bool
+    let onFocus: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -72,6 +97,8 @@ struct ObservationTile: View {
                     .font(.caption)
                     .lineLimit(1)
                 Spacer()
+                Button(isFocused ? "Focused" : "Focus") { onFocus() }
+                    .buttonStyle(.plain)
                 Button {
                     // Route through the coordinator (central ownership).
                     NotificationCenter.default.post(name: .opendeskCloseTile, object: tile.id)
@@ -92,7 +119,6 @@ struct ObservationTile: View {
                 .strokeBorder(Color.secondary.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 4))
-        .onAppear { tile.start() }
     }
 }
 
@@ -151,7 +177,7 @@ struct TileHostPicker: View {
 
 // MARK: - Models
 
-/// One tile: a host + its streamer lifecycle.
+/// One tile: a host + the coordinator-owned stream it renders.
 @MainActor
 final class ObservationTileModel: ObservableObject, Identifiable {
     let id = UUID()
@@ -167,22 +193,16 @@ final class ObservationTileModel: ObservableObject, Identifiable {
         self.sessionID = sessionID
     }
 
-    func start() {
-        streamer.startStreaming()
-    }
-
-    func stop() {
-        streamer.stopStreaming()
-    }
 }
 
 @MainActor
 final class TileViewModel: ObservableObject {
     /// Central ownership (Plan 10 §2): sessions are opened/closed via the
     /// coordinator, not by tiles or views.
-    let coordinator = ObserveSessionCoordinator()
+    let coordinator = ObserveSessionCoordinator.shared
     @Published var tiles: [ObservationTileModel] = []
     @Published var availableHosts: [OpenDeskCore.Host] = []
+    @Published var errorMessage: String?
 
     func reloadHosts() {
         availableHosts = HostRegistry().loadAll()
@@ -190,8 +210,12 @@ final class TileViewModel: ObservableObject {
 
     func addTile(for host: OpenDeskCore.Host) {
         guard !tiles.contains(where: { $0.host.id == host.id }) else { return }
-        guard let tile = try? coordinator.open(host: host, password: nil) else { return }
-        tiles.append(tile)
+        do {
+            tiles.append(try coordinator.open(host: host, password: nil))
+            errorMessage = nil
+        } catch {
+            errorMessage = "Could not add \(host.hostname): \(error)"
+        }
     }
 
     func removeTile(_ tile: ObservationTileModel) {
@@ -202,5 +226,10 @@ final class TileViewModel: ObservableObject {
     func stopAll() {
         tiles.forEach(coordinator.close)
         tiles.removeAll()
+        errorMessage = nil
+    }
+
+    func focus(_ tile: ObservationTileModel?) {
+        coordinator.focus(tile)
     }
 }

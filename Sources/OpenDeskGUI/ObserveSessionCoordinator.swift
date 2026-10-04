@@ -13,32 +13,44 @@ final class ObserveSessionCoordinator: ObservableObject {
 
     private let manager = ObserveSessionManager(maxSessions: 16)
     private var streamers: [SessionID: ScreenStreamer] = [:]
-    /// SessionID lookup by host id so tiles can resolve their stream.
-    private var sessionByHost: [UUID: SessionID] = [:]
+    private var tiles: [SessionID: ObservationTileModel] = [:]
 
     @Published private(set) var liveSessions: Int = 0
 
     /// Open a session for a host. Throws when the session cap is reached.
-    func open(host: OpenDeskCore.Host, password: String?) throws -> ObservationTileModel {
+    func open(
+        host: OpenDeskCore.Host,
+        password: String?,
+        tier: QualityTier = .visibleThumbnail
+    ) throws -> ObservationTileModel {
         let device = Device(hostname: host.hostname, lifecycle: .online)
-        let record = try manager.open(device: device)
-        let streamer = ScreenStreamer(host: host, password: password)
+        var record = try manager.open(device: device)
+        if record.tier != tier {
+            try manager.setTier(sessionID: record.id, tier: tier)
+            record.tier = tier
+            record.active = tier != .suspended
+        }
+        let streamer = ScreenStreamer(host: host, password: password, qualityTier: record.tier)
+        let tile = ObservationTileModel(host: host, streamer: streamer, sessionID: record.id)
         streamers[record.id] = streamer
-        sessionByHost[host.id] = record.id
+        tiles[record.id] = tile
         liveSessions = manager.sessionCount
-        return ObservationTileModel(host: host, streamer: streamer, sessionID: record.id)
+        // The coordinator, not the view, starts and owns the connection lifecycle.
+        streamer.startStreaming()
+        return tile
     }
 
     /// Close a session: streamer teardown + central ownership release.
     func close(_ tile: ObservationTileModel) {
         streamers[tile.sessionID]?.stopStreaming()
         streamers.removeValue(forKey: tile.sessionID)
+        tiles.removeValue(forKey: tile.sessionID)
         try? manager.close(sessionID: tile.sessionID)
         liveSessions = manager.sessionCount
     }
 
     func closeAll() {
-        for tile in tilesSnapshot() { close(tile) }
+        for tile in Array(tiles.values) { close(tile) }
     }
 
     /// Quality-tier change WITHOUT reconnect (Plan 10 §5): the manager updates
@@ -48,19 +60,12 @@ final class ObserveSessionCoordinator: ObservableObject {
         streamers[tile.sessionID]?.applyQualityTier(tier)
     }
 
-    func isStreaming(hostID: UUID) -> Bool {
-        sessionByHost[hostID] != nil
-    }
-
-    private func tilesSnapshot() -> [ObservationTileModel] {
-        streamers.keys.compactMap { sessionID in
-            streamers[sessionID].map { streamer in
-                ObservationTileModel(
-                    host: OpenDeskCore.Host(hostname: "", username: ""),
-                    streamer: streamer,
-                    sessionID: sessionID
-                )
-            }
+    /// Keep one selected session responsive while other active tiles use the
+    /// bounded thumbnail cadence. A nil selection clears the promotion.
+    func focus(_ selected: ObservationTileModel?) {
+        for tile in tiles.values {
+            setTier(tile, tier: tile.sessionID == selected?.sessionID ? .focused : .visibleThumbnail)
         }
     }
+
 }
