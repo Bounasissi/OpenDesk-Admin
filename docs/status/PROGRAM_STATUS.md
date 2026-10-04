@@ -3,9 +3,9 @@
 > This file is the human-readable half of the authoritative state.
 > The machine-readable half is `program-state.json`. Both must be updated on every plan completion.
 
-Last updated: 2026-09-13
+Last updated: 2026-10-03
 Program status: EXECUTING
-Current plan: `01-REPOSITORY-BASELINE`
+Current plan: `14-HIGH-PERFORMANCE-STREAMING`
 
 ---
 
@@ -29,7 +29,7 @@ Current plan: `01-REPOSITORY-BASELINE`
 | 11 | OpenDesk Endpoint Agent | **PLAN COMPLETE** (protocol core) | commit efd91de; AgentHello/Welcome negotiation (one-version skew verified), EnrollmentService (one-time token → Keychain identity, reuse rejected), AgentJobQueue (restart-survivable), LaunchDaemon/LaunchAgent plists, `opendesk-agent` binary (enroll/daemon/user-agent/status — status verified live); live TLS channel + agent update path → gated on 17A fleet + 20 |
 | 12 | CLI / API / Shortcuts | **PLAN COMPLETE** (CLI+API) | commit dd34c30; LocalAPIServer (versioned UDS, 0600, no TCP) + `serve` command + 4 API tests; `docs/cli/REFERENCE.md` (--json coverage table + stable exit codes); App Intents explicitly NOT implemented yet (tracked, Plan 15) |
 | 13 | MDM / Provisioning | **PLAN COMPLETE** (guidance + diagnostics) | commit efd91de; docs/provisioning/MDM_GUIDE.md (5 vendors); `opendesk-agent status` reports §5 diagnostic fields (verified live); TCC bypass never attempted |
-| 14 | High-Performance Streaming | **PARTIAL** (consent-free core; native capture/encode/decode/render not implemented) | AdaptiveQualityController + 5-channel framing + session/input logic; 2026-10-03 session lifecycle review/remediation in `plan14-session-ownership`; capture permission remains a runtime gate, but ScreenCaptureKit/VideoToolbox implementation is still required before Plan 14 exit |
+| 14 | High-Performance Streaming | **PARTIAL** (native capture implemented; encoder/transport/decode/render and measured exit gate open) | Agent-side ScreenCaptureKit multi-display capture on `plan14-session-ownership`; per-display stream plans, consent-safe permission checks, optional single-route audio, timing/geometry metadata, periodic display/permission refresh, interruption recovery, and no-write capture smoke harness; permissioned hardware capture not run |
 | 15 | UX / Accessibility / Onboarding | **PARTIAL** | OnboardingDetector + App Intents; observe UI now uses shared session manager, bounded 16-session cap and focus tier updates; VoiceOver/keyboard/contrast manual QA and complete device/task surfaces remain open |
 | 16 | Security Hardening | **PLAN COMPLETE** (sweep) | commit HEAD; THREAT_MODEL.md (14 threats → controls); DB 0600 enforced + tested; path-traversal validation + tested; command parameterization verified; secret scan + license gates green in CI; privileged-helper audit → 20 (external) |
 | 17 | Compatibility / Reliability / Performance | **PLAN COMPLETE** (automatable) | commit b151990; failure-injection fleet test; sustained-churn + 100-cycle soak memory-bounded; resource-leak monitoring (session table); clean-clone bootstrap+verify gate PASSED; network-condition matrix + real-host lanes → 17A (external: second Mac) |
@@ -320,4 +320,18 @@ REVIEW: separate tiled coordinators replaced by one app-wide ObserveSessionCoord
 DEFECTS: synchronous DNS/connect remains non-interruptible while the OS connect call is in progress; returned socket is checked/closed when connect returns; bounded connect cancellation remains follow-up
 MANUAL: GUI launch smoke PASS (alive after 3s, terminated); live multi-host FPS/capacity and accessibility QA not established by this smoke
 RESULT: TASK COMPLETE (session ownership/lifecycle remediation only); Plan 14 and Plan 15 remain PARTIAL
+```
+
+```text
+CURRENT TASK: Plan 14 §2 native ScreenCaptureKit capture pipeline (2026-10-03)
+BRANCH: plan14-session-ownership (not merged; base canonical-091326 at 4c7ff77)
+BUILD: SwiftPM agent, GUI, CLI, and test products compile on Xcode 27 / macOS 27 SDK
+TESTS: `make verify` PASS, 203/203 tests; new framework-neutral capture planner, multi-display/audio routing, frame metadata and invalid-input cases pass
+CAPTURE: user-agent-side SCStream per display; native pixel geometry; 1–60 FPS bound; optional system audio once; IOSurface-backed sample metadata; explicit TCC prompt only; 5-second display/permission reconciliation; failure and revocation cleanup
+INTEGRATION PROBE: `opendesk-agent capture-smoke --display <id> [--seconds 1-60] [--request-permission]`; counts metadata in memory only, writes/transmits no pixels
+MANUAL GATE: actual captured frames, dynamic-resolution changes, and audio require Screen Recording consent and a real display; not yet executed
+OPEN: authenticated remote-session start path, VideoToolbox H.264 encode, channel delivery, hardware verification and Plan 14 §9 LAN/degraded comparison
+REVIEW: capture error/permission revocation clears state; display/permission poll reconciles within five seconds; failed starts/refreshes are rolled back; complete frames after blank/suspend emit `.resumed`; privacy path stores/transmits no image data
+VERIFICATION: lint/build/test, secret-scan, license-check, and GUI launch smoke PASS; actual capture-smoke intentionally not run because Screen Recording permissioned hardware execution has not been approved/evidenced
+RESULT: TASK COMPLETE (capture implementation + consent-free automated coverage); Plan 14 remains PARTIAL
 ```

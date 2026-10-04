@@ -8,6 +8,7 @@ import OpenDeskCore
 ///   opendesk-agent daemon                           privileged/system loop
 ///   opendesk-agent user-agent                       per-user session loop
 ///   opendesk-agent status                           local diagnostic report
+///   opendesk-agent capture-smoke --display <id>     consent-gated native capture probe
 ///
 /// The daemon performs ONLY privileged/system operations (inventory, package
 /// operations, power tasks, durable jobs). User-session operations (screen
@@ -15,13 +16,13 @@ import OpenDeskCore
 /// No arbitrary privileged shell execution is exposed to untrusted clients.
 @main
 struct OpenDeskAgent {
-    static func main() {
+    static func main() async {
         let args = Array(CommandLine.arguments.dropFirst())
-        let code = run(args: args)
+        let code = await run(args: args)
         exit(code)
     }
 
-    static func run(args: [String]) -> Int32 {
+    static func run(args: [String]) async -> Int32 {
         guard let mode = args.first else {
             printUsage()
             return 1
@@ -31,6 +32,7 @@ struct OpenDeskAgent {
         case "daemon": return daemonLoop()
         case "user-agent": return userAgentLoop()
         case "status": return status()
+        case "capture-smoke": return await captureSmoke(rest: Array(args.dropFirst()))
         case "--help", "-h", "help": printUsage(); return 0
         default:
             FileHandle.standardError.write("unknown mode: \(mode)\n".data(using: .utf8)!)
@@ -48,6 +50,7 @@ struct OpenDeskAgent {
             opendesk-agent daemon
             opendesk-agent user-agent
             opendesk-agent status
+            opendesk-agent capture-smoke --display <id> [--seconds <1-60>] [--request-permission]
         """)
     }
 
@@ -108,6 +111,58 @@ struct OpenDeskAgent {
         // the Plan 15 GUI integration (screen capture cooperation, notify).
         while true {
             Thread.sleep(forTimeInterval: 30)
+        }
+    }
+
+    /// Local, consent-gated integration harness for ScreenCaptureKit. It does
+    /// not expose frames over the network or persist captured content.
+    @MainActor
+    static func captureSmoke(rest: [String]) async -> Int32 {
+        guard let displayIndex = rest.firstIndex(of: "--display"),
+              displayIndex + 1 < rest.count,
+              let displayID = Int(rest[displayIndex + 1]) else {
+            FileHandle.standardError.write("capture-smoke: --display <id> is required\n".data(using: .utf8)!)
+            return 2
+        }
+        let seconds: Int
+        if let secondsIndex = rest.firstIndex(of: "--seconds") {
+            guard secondsIndex + 1 < rest.count,
+                  let parsed = Int(rest[secondsIndex + 1]), (1...60).contains(parsed) else {
+                FileHandle.standardError.write("capture-smoke: --seconds must be between 1 and 60\n".data(using: .utf8)!)
+                return 2
+            }
+            seconds = parsed
+        } else {
+            seconds = 5
+        }
+
+        let service = ScreenCaptureService()
+        if rest.contains("--request-permission"), !service.hasScreenRecordingPermission {
+            _ = service.requestScreenRecordingPermission()
+        }
+        let metrics = CaptureSmokeMetrics()
+        do {
+            try await service.start(
+                configuration: CaptureConfiguration(displayIDs: [displayID]),
+                onFrame: { metrics.record($0.metadata) }
+            )
+            try await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
+            await service.stop()
+            let result = metrics.snapshot(durationSeconds: seconds)
+            guard result.frameCount > 0 else {
+                FileHandle.standardError.write("capture-smoke: no complete frames received\n".data(using: .utf8)!)
+                return 1
+            }
+            print("capture-smoke: PASS display=\(displayID) frames=\(result.frameCount) fps=\(String(format: "%.1f", result.framesPerSecond)) dimensions=\(result.width)x\(result.height)")
+            return 0
+        } catch ScreenCaptureServiceError.permissionRequired {
+            await service.stop()
+            FileHandle.standardError.write("capture-smoke: Screen Recording permission required; enable OpenDesk in System Settings > Privacy & Security > Screen Recording, then retry\n".data(using: .utf8)!)
+            return 3
+        } catch {
+            await service.stop()
+            FileHandle.standardError.write("capture-smoke failed: \(error)\n".data(using: .utf8)!)
+            return 1
         }
     }
 

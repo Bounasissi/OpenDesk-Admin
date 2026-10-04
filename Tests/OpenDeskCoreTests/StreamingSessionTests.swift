@@ -65,7 +65,7 @@ final class StreamingSessionTests: XCTestCase {
         XCTAssertEqual(decodedClip, clipboardEvent)
     }
 
-    // MARK: Capture/encode configuration types (§2/§3 behind the consent gate)
+    // MARK: Capture/encode configuration and metadata (§2/§3)
 
     func testEncodeConfigurationDefaultsAndHEVCFlag() {
         let h264 = EncodeConfiguration()
@@ -76,9 +76,67 @@ final class StreamingSessionTests: XCTestCase {
     }
 
     func testCaptureConfigurationCoversDisplaysAndAudio() {
-        let config = CaptureConfiguration(displayIDs: [1, 2], audioEnabled: true, dynamicResolution: true)
+        let config = CaptureConfiguration(displayIDs: [1, 2], audioEnabled: true, dynamicResolution: true, framesPerSecond: 24)
         XCTAssertEqual(config.displayIDs.count, 2, "multiple displays (§2)")
         XCTAssertTrue(config.audioEnabled, "audio where enabled (§2)")
         XCTAssertTrue(config.dynamicResolution, "dynamic resolution (§2)")
+        XCTAssertEqual(config.framesPerSecond, 24)
+    }
+
+    func testCaptureRequestResolvesDisplaysInCallerOrder() throws {
+        let available = [
+            CaptureDisplayDescriptor(id: 2, width: 2560, height: 1440),
+            CaptureDisplayDescriptor(id: 1, width: 1920, height: 1080),
+        ]
+        let resolved = try CaptureConfiguration(displayIDs: [1, 2]).validatedDisplays(available: available)
+        XCTAssertEqual(resolved.map(\.id), [1, 2])
+        XCTAssertEqual(resolved[0].width, 1920)
+    }
+
+    func testCaptureStreamPlansAssignAudioToOnlyPrimaryDisplay() throws {
+        let displays = [
+            CaptureDisplayDescriptor(id: 2, width: 2560, height: 1440),
+            CaptureDisplayDescriptor(id: 1, width: 1920, height: 1080),
+        ]
+        let plans = try CaptureConfiguration(
+            displayIDs: [1, 2], audioEnabled: true, dynamicResolution: false, framesPerSecond: 30
+        ).streamPlans(available: displays)
+
+        XCTAssertEqual(plans.map { $0.display.id }, [1, 2])
+        XCTAssertEqual(plans.map(\.capturesAudio), [true, false])
+        XCTAssertTrue(plans.allSatisfy { $0.framesPerSecond == 30 && !$0.dynamicResolution })
+    }
+
+    func testCaptureRequestRejectsEmptyDuplicateMissingAndInvalidRate() {
+        let available = [CaptureDisplayDescriptor(id: 1, width: 1920, height: 1080)]
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: []).validatedDisplays(available: available))
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: [1, 1]).validatedDisplays(available: available))
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: [9]).validatedDisplays(available: available))
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: [1], framesPerSecond: 0).validatedDisplays(available: available))
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: [1], framesPerSecond: 61).validatedDisplays(available: available))
+        XCTAssertThrowsError(try CaptureConfiguration(displayIDs: [1]).validatedDisplays(available: available + available))
+    }
+
+    func testCaptureFrameMetadataPreservesTimingGeometryAndScale() throws {
+        let metadata = CaptureFrameMetadata(
+            displayID: 17,
+            width: 2560,
+            height: 1440,
+            timestampNanoseconds: 1_234_567_890,
+            contentX: 0,
+            contentY: 0,
+            contentWidth: 2560,
+            contentHeight: 1440,
+            scaleFactor: 2
+        )
+        XCTAssertTrue(metadata.hasValidGeometry)
+        let roundTrip = try JSONDecoder().decode(CaptureFrameMetadata.self, from: JSONEncoder().encode(metadata))
+        XCTAssertEqual(roundTrip, metadata)
+
+        let invalid = CaptureFrameMetadata(
+            displayID: 17, width: 0, height: 1440, timestampNanoseconds: 0,
+            contentX: 0, contentY: 0, contentWidth: 2560, contentHeight: 1440, scaleFactor: 2
+        )
+        XCTAssertFalse(invalid.hasValidGeometry)
     }
 }

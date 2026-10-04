@@ -1,16 +1,132 @@
 import Foundation
 
-// MARK: - Plan 14 §2/§3: capture + encode configuration (consent-gated impl)
+// MARK: - Plan 14 §2/§3: capture + encode configuration
 
 public struct CaptureConfiguration: Equatable, Sendable {
     public var displayIDs: [Int]
     public var audioEnabled: Bool
     public var dynamicResolution: Bool
+    public var framesPerSecond: Int
 
-    public init(displayIDs: [Int], audioEnabled: Bool = false, dynamicResolution: Bool = true) {
+    public init(
+        displayIDs: [Int],
+        audioEnabled: Bool = false,
+        dynamicResolution: Bool = true,
+        framesPerSecond: Int = 30
+    ) {
         self.displayIDs = displayIDs
         self.audioEnabled = audioEnabled
         self.dynamicResolution = dynamicResolution
+        self.framesPerSecond = framesPerSecond
+    }
+
+    /// Returns the selected displays after validating the request against the
+    /// current shareable-content snapshot. Kept framework-free for unit tests.
+    public func validatedDisplays(available: [CaptureDisplayDescriptor]) throws -> [CaptureDisplayDescriptor] {
+        guard !displayIDs.isEmpty else {
+            throw ConfigurationError.invalidValue(key: "displayIDs", reason: "at least one display is required")
+        }
+        guard Set(displayIDs).count == displayIDs.count else {
+            throw ConfigurationError.invalidValue(key: "displayIDs", reason: "display identifiers must be unique")
+        }
+        guard (1...60).contains(framesPerSecond) else {
+            throw ConfigurationError.invalidValue(key: "framesPerSecond", reason: "must be between 1 and 60")
+        }
+        guard Set(available.map(\.id)).count == available.count else {
+            throw ConfigurationError.invalidValue(key: "availableDisplays", reason: "display identifiers must be unique")
+        }
+        let byID = Dictionary(uniqueKeysWithValues: available.map { ($0.id, $0) })
+        return try displayIDs.map { id in
+            guard let display = byID[id] else {
+                throw ConfigurationError.invalidValue(key: "displayIDs", reason: "display \(id) is not available")
+            }
+            guard display.width > 0, display.height > 0 else {
+                throw ConfigurationError.invalidValue(key: "displayDimensions", reason: "display dimensions must be positive")
+            }
+            return display
+        }
+    }
+
+    /// Deterministic per-display plan consumed by the ScreenCaptureKit adapter.
+    /// System audio is attached once to avoid duplicate audio frames when
+    /// multiple displays are captured concurrently.
+    public func streamPlans(available: [CaptureDisplayDescriptor]) throws -> [CaptureStreamPlan] {
+        try validatedDisplays(available: available).enumerated().map { index, display in
+            CaptureStreamPlan(
+                display: display,
+                framesPerSecond: framesPerSecond,
+                capturesAudio: audioEnabled && index == 0,
+                dynamicResolution: dynamicResolution
+            )
+        }
+    }
+}
+
+public struct CaptureStreamPlan: Equatable, Sendable {
+    public let display: CaptureDisplayDescriptor
+    public let framesPerSecond: Int
+    public let capturesAudio: Bool
+    public let dynamicResolution: Bool
+
+    public init(display: CaptureDisplayDescriptor, framesPerSecond: Int, capturesAudio: Bool, dynamicResolution: Bool) {
+        self.display = display
+        self.framesPerSecond = framesPerSecond
+        self.capturesAudio = capturesAudio
+        self.dynamicResolution = dynamicResolution
+    }
+}
+
+/// Framework-neutral display snapshot from ScreenCaptureKit shareable content.
+public struct CaptureDisplayDescriptor: Equatable, Codable, Sendable {
+    public let id: Int
+    public let width: Int
+    public let height: Int
+
+    public init(id: Int, width: Int, height: Int) {
+        self.id = id
+        self.width = width
+        self.height = height
+    }
+}
+
+/// Metadata emitted for each complete video sample. Coordinates are in pixels;
+/// timestamp is the sample presentation time expressed in nanoseconds.
+public struct CaptureFrameMetadata: Equatable, Codable, Sendable {
+    public let displayID: Int
+    public let width: Int
+    public let height: Int
+    public let timestampNanoseconds: Int64
+    public let contentX: Double
+    public let contentY: Double
+    public let contentWidth: Double
+    public let contentHeight: Double
+    public let scaleFactor: Double
+
+    public init(
+        displayID: Int,
+        width: Int,
+        height: Int,
+        timestampNanoseconds: Int64,
+        contentX: Double,
+        contentY: Double,
+        contentWidth: Double,
+        contentHeight: Double,
+        scaleFactor: Double
+    ) {
+        self.displayID = displayID
+        self.width = width
+        self.height = height
+        self.timestampNanoseconds = timestampNanoseconds
+        self.contentX = contentX
+        self.contentY = contentY
+        self.contentWidth = contentWidth
+        self.contentHeight = contentHeight
+        self.scaleFactor = scaleFactor
+    }
+
+    public var hasValidGeometry: Bool {
+        width > 0 && height > 0 && contentWidth > 0 && contentHeight > 0 && scaleFactor > 0 &&
+            [contentX, contentY, contentWidth, contentHeight, scaleFactor].allSatisfy(\.isFinite)
     }
 }
 
