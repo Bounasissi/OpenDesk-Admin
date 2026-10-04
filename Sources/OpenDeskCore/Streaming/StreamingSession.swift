@@ -138,10 +138,34 @@ public enum StreamCodec: String, Codable, Sendable {
 public struct EncodeConfiguration: Equatable, Sendable {
     public var codec: StreamCodec
     public var hardwareAcceleration: Bool
+    public var averageBitrateKbps: Int
+    public var maxKeyframeIntervalSeconds: Int
 
-    public init(codec: StreamCodec = .h264, hardwareAcceleration: Bool = true) {
+    public init(
+        codec: StreamCodec = .h264,
+        hardwareAcceleration: Bool = true,
+        averageBitrateKbps: Int = 6_000,
+        maxKeyframeIntervalSeconds: Int = 2
+    ) {
         self.codec = codec
         self.hardwareAcceleration = hardwareAcceleration
+        self.averageBitrateKbps = averageBitrateKbps
+        self.maxKeyframeIntervalSeconds = maxKeyframeIntervalSeconds
+    }
+
+    public func validate(width: Int, height: Int, framesPerSecond: Int) throws {
+        guard (1...16_384).contains(width), (1...16_384).contains(height) else {
+            throw ConfigurationError.invalidValue(key: "encodeDimensions", reason: "width and height must be between 1 and 16384 pixels")
+        }
+        guard (1...60).contains(framesPerSecond) else {
+            throw ConfigurationError.invalidValue(key: "framesPerSecond", reason: "must be between 1 and 60")
+        }
+        guard (64...100_000).contains(averageBitrateKbps) else {
+            throw ConfigurationError.invalidValue(key: "averageBitrateKbps", reason: "must be between 64 and 100000")
+        }
+        guard (1...10).contains(maxKeyframeIntervalSeconds) else {
+            throw ConfigurationError.invalidValue(key: "maxKeyframeIntervalSeconds", reason: "must be between 1 and 10 seconds")
+        }
     }
 }
 

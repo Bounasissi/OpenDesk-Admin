@@ -25,12 +25,13 @@
       "branch": "plan14-session-ownership (isolated from canonical-091326)",
       "baseCommit": "4c7ff77",
       "buildResult": "PASS (make verify; debug and warning-as-error builds)",
-      "testResult": "203/203 passed, 0 failed, exit 0",
+      "testResult": "210/210 passed across OpenDeskCoreTests (204) and OpenDeskAgentTests (6), 0 failed",
       "secretScan": "PASS",
       "licenseCheck": "PASS",
-      "guiLaunchSmoke": "PASS (alive after 3 seconds; clean termination)",
-      "scope": "Plan 10 GUI session ownership remediation and Plan 14 ScreenCaptureKit capture/planning/metadata implementation; not a full capability re-audit",
-      "nativeCaptureRun": "NOT RUN; requires explicit Screen Recording authorization and consented display test"
+      "guiLaunchSmoke": "PASS on capture task base verification; not rerun for the encoder-only task",
+      "scope": "Plan 10 GUI ownership, Plan 14 ScreenCaptureKit capture and actual VideoToolbox H.264 encode integration tests; not a full capability re-audit",
+      "nativeCaptureRun": "NOT RUN; actual ScreenCaptureKit capture requires explicit Screen Recording authorization and a consented display test",
+      "nativeEncodeRun": "PASS; synthetic NV12 frames encoded through VideoToolbox in XCTest without screen capture permission"
     }
   },
   "statuses": {

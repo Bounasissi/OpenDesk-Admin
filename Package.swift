@@ -32,5 +32,10 @@ let package = Package(
             dependencies: ["OpenDeskCore"],
             path: "Tests/OpenDeskCoreTests"
         ),
+        .testTarget(
+            name: "OpenDeskAgentTests",
+            dependencies: ["OpenDeskAgent", "OpenDeskCore"],
+            path: "Tests/OpenDeskAgentTests"
+        ),
     ]
 )

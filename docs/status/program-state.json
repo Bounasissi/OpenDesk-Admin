@@ -35,5 +35,5 @@
   "programStatus": "EXECUTING",
   "productionStatus": "NOT-LIVE",
   "lastUpdated": "2026-10-03",
-  "notes": "Plan 14 remains executing on isolated branch plan14-session-ownership. Agent-side native ScreenCaptureKit multi-display capture, testable capture planning/metadata components, periodic display/permission reconciliation, recovery and a consent-gated no-persistence capture-smoke harness passed make verify (203 tests), secret/license checks and GUI smoke on 2026-10-03. Actual authorized capture, encoder/transport/decode/render, hardware measurements and \u00a79 exit gate remain incomplete. Canonical baseline remains 4c7ff77; do not mark Plan 14 complete."
+  "notes": "Plan 14 remains executing on isolated branch plan14-session-ownership. Agent-side ScreenCaptureKit capture and VideoToolbox H.264 encoding are implemented. 2026-10-03 make verify passes: core 204/204, agent/native VideoToolbox 6/6; warning-as-error build/lint, secret/license checks pass. Synthetic NV12 frames exercise actual VideoToolbox output, resize, keyframes, bitrate changes and callback reentrancy without Screen Recording permission. Real capture permission/hardware selection, HEVC, integrated transport/decode/render and \u00a79 performance evidence remain incomplete. Canonical baseline remains 4c7ff77; do not mark Plan 14 complete."
 }

@@ -71,8 +71,18 @@ final class StreamingSessionTests: XCTestCase {
         let h264 = EncodeConfiguration()
         XCTAssertEqual(h264.codec, .h264, "start with H.264 (§3)")
         XCTAssertTrue(h264.hardwareAcceleration)
+        XCTAssertEqual(h264.averageBitrateKbps, 6_000)
+        XCTAssertEqual(h264.maxKeyframeIntervalSeconds, 2)
         let hevc = EncodeConfiguration(codec: .hevc)
         XCTAssertEqual(hevc.codec, .hevc, "HEVC behind capability flag")
+    }
+
+    func testEncodeConfigurationValidatesRuntimeBounds() throws {
+        try EncodeConfiguration().validate(width: 1920, height: 1080, framesPerSecond: 30)
+        XCTAssertThrowsError(try EncodeConfiguration().validate(width: 0, height: 1080, framesPerSecond: 30))
+        XCTAssertThrowsError(try EncodeConfiguration().validate(width: 1920, height: 1080, framesPerSecond: 61))
+        XCTAssertThrowsError(try EncodeConfiguration(averageBitrateKbps: 10).validate(width: 1, height: 1, framesPerSecond: 1))
+        XCTAssertThrowsError(try EncodeConfiguration(maxKeyframeIntervalSeconds: 0).validate(width: 1, height: 1, framesPerSecond: 1))
     }
 
     func testCaptureConfigurationCoversDisplaysAndAudio() {

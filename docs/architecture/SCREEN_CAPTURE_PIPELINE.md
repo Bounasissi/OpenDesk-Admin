@@ -1,8 +1,7 @@
 # ScreenCaptureKit Capture Pipeline
 
-**Status:** Capture implementation in progress under Plan 14. This document
-covers agent-side capture only; encoding, network delivery, client decode, and
-rendering remain separate Plan 14 work.
+**Status:** Agent-side capture and VideoToolbox encoding are implemented under
+Plan 14. Network delivery, client decode, and rendering remain separate work.
 
 ## Ownership and consent
 
@@ -57,10 +56,41 @@ permission-gated and must be run on a machine where that authorization is
 available; CI verifies compilation and the framework-neutral planning and
 metadata components only.
 
-## Remaining Plan 14 capture work
+## VideoToolbox encoding
+
+`Sources/OpenDeskAgent/VideoToolboxEncoder.swift` consumes the captured
+IOSurface-backed NV12 buffers directly. H.264 is the default; HEVC is selectable
+through `EncodeConfiguration` but is not enabled by default. The compression
+session is configured for real-time encoding, expected frame rate, average
+bitrate, a bounded keyframe interval, and disabled frame reordering for lower
+latency. Hardware acceleration is requested when enabled but not required, so
+VideoToolbox can fall back; this is not proof that the selected encoder is
+hardware-backed.
+
+Each output contains compressed bytes, presentation time, coded dimensions,
+keyframe state, codec, and its `CMFormatDescription` (required for downstream
+decoder setup). `setAverageBitrate(kbps:)` applies adaptive bitrate decisions
+without recreating the session. If capture dimensions change, the encoder
+completes outstanding VideoToolbox callbacks from the old session, then creates
+a new session; a shared serial output queue preserves delivery order across
+that transition, and the new session begins with a keyframe. Output handlers
+run asynchronously and may finish after `finish()` returns. Invalid geometry, formats,
+rates, and encoder lifecycle calls produce typed errors.
+
+`Tests/OpenDeskAgentTests/VideoToolboxEncoderTests.swift` creates synthetic
+NV12 pixel buffers and runs the actual VideoToolbox H.264 compressor. The test
+checks non-empty compressed output, H.264 format description, timestamps,
+keyframes, bitrate updates, dimension reconfiguration, stop/error behavior, and
+callback reentrancy.
+This requires no screen recording permission and captures no real user content.
+
+## Remaining Plan 14 work
 
 - Wire the per-user agent capture service into an authenticated remote-session
   request/approval path.
-- Add VideoToolbox H.264 encoding and bind bitrate/keyframe adaptation.
-- Measure hardware behavior, dynamic-resolution transitions, and multi-display
-  capture on a consented test Mac.
+- Connect the adaptive controller's keyframe/bitrate outputs to the encoder and
+  capture configuration in the live capture-to-network session.
+- Measure hardware selection, real capture/encode latency, dynamic-resolution
+  transitions, and multi-display behavior on a consented test Mac.
+- Implement transport, decode/render, and Plan 14 §9 LAN/degraded-profile
+  comparison evidence.

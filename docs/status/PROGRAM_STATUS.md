@@ -29,7 +29,7 @@ Current plan: `14-HIGH-PERFORMANCE-STREAMING`
 | 11 | OpenDesk Endpoint Agent | **PLAN COMPLETE** (protocol core) | commit efd91de; AgentHello/Welcome negotiation (one-version skew verified), EnrollmentService (one-time token → Keychain identity, reuse rejected), AgentJobQueue (restart-survivable), LaunchDaemon/LaunchAgent plists, `opendesk-agent` binary (enroll/daemon/user-agent/status — status verified live); live TLS channel + agent update path → gated on 17A fleet + 20 |
 | 12 | CLI / API / Shortcuts | **PLAN COMPLETE** (CLI+API) | commit dd34c30; LocalAPIServer (versioned UDS, 0600, no TCP) + `serve` command + 4 API tests; `docs/cli/REFERENCE.md` (--json coverage table + stable exit codes); App Intents explicitly NOT implemented yet (tracked, Plan 15) |
 | 13 | MDM / Provisioning | **PLAN COMPLETE** (guidance + diagnostics) | commit efd91de; docs/provisioning/MDM_GUIDE.md (5 vendors); `opendesk-agent status` reports §5 diagnostic fields (verified live); TCC bypass never attempted |
-| 14 | High-Performance Streaming | **PARTIAL** (native capture implemented; encoder/transport/decode/render and measured exit gate open) | Agent-side ScreenCaptureKit multi-display capture on `plan14-session-ownership`; per-display stream plans, consent-safe permission checks, optional single-route audio, timing/geometry metadata, periodic display/permission refresh, interruption recovery, and no-write capture smoke harness; permissioned hardware capture not run |
+| 14 | High-Performance Streaming | **PARTIAL** (capture + H.264 encoding implemented; transport/decode/render and measured exit gate open) | Agent-side ScreenCaptureKit multi-display capture and VideoToolbox H.264 encoder on `plan14-session-ownership`; synthetic NV12 VideoToolbox tests pass; permissioned capture and real-hardware comparison not run |
 | 15 | UX / Accessibility / Onboarding | **PARTIAL** | OnboardingDetector + App Intents; observe UI now uses shared session manager, bounded 16-session cap and focus tier updates; VoiceOver/keyboard/contrast manual QA and complete device/task surfaces remain open |
 | 16 | Security Hardening | **PLAN COMPLETE** (sweep) | commit HEAD; THREAT_MODEL.md (14 threats → controls); DB 0600 enforced + tested; path-traversal validation + tested; command parameterization verified; secret scan + license gates green in CI; privileged-helper audit → 20 (external) |
 | 17 | Compatibility / Reliability / Performance | **PLAN COMPLETE** (automatable) | commit b151990; failure-injection fleet test; sustained-churn + 100-cycle soak memory-bounded; resource-leak monitoring (session table); clean-clone bootstrap+verify gate PASSED; network-condition matrix + real-host lanes → 17A (external: second Mac) |
@@ -334,4 +334,17 @@ OPEN: authenticated remote-session start path, VideoToolbox H.264 encode, channe
 REVIEW: capture error/permission revocation clears state; display/permission poll reconciles within five seconds; failed starts/refreshes are rolled back; complete frames after blank/suspend emit `.resumed`; privacy path stores/transmits no image data
 VERIFICATION: lint/build/test, secret-scan, license-check, and GUI launch smoke PASS; actual capture-smoke intentionally not run because Screen Recording permissioned hardware execution has not been approved/evidenced
 RESULT: TASK COMPLETE (capture implementation + consent-free automated coverage); Plan 14 remains PARTIAL
+```
+
+```text
+CURRENT TASK: Plan 14 §3 VideoToolbox encode stage (2026-10-03)
+BRANCH: plan14-session-ownership (isolated; not merged to canonical-091326)
+IMPLEMENTATION: VideoToolboxEncoder accepts captured NV12 buffers; H.264 default, optional HEVC; real-time settings; average bitrate and keyframe interval; keyframe requests; low-latency no-B-frame setting; maintains PTS, codec format description, dimensions and keyframe metadata
+RESIZE: finishes/drains the old VT session and creates a new session for changed dimensions; new session starts with a keyframe
+ADAPTATION: average bitrate can change in-place via setAverageBitrate(kbps:)
+NATIVE TESTS: synthetic NV12 buffers are encoded with actual VideoToolbox; tests assert compressed output, H.264 format description, PTS, keyframes, resize/recreate, bitrate validation, dimension mismatch and terminal stop behavior
+LIMITS: hardware acceleration is requested but not required; selected hardware path not reported/proven; HEVC capability path not exercised; no screen TCC needed for the synthetic VT tests
+VERIFICATION: `make verify` PASS: OpenDeskCoreTests 204/204 and OpenDeskAgentTests 6/6; builds and warning-as-error lint, secret-scan and license-check PASS
+OPEN: wire encoder to live captured frames and adaptive controller; secure network channel, client decode/render and Plan 14 §9 measurements remain
+RESULT: task implementation and focused native tests pass; Plan 14 remains PARTIAL
 ```
